@@ -50,8 +50,8 @@ namespace ReductionFichierTexte
 
         static void Main(string[] args)
         {
-            string fichierSource = "dico_fr.txt";
-            string fichierCible = "dico_reduit.txt";
+            string fichierSource = "./Resources/dico_fr.txt";
+            string fichierCible = "./Resources/dico_reduit.txt";
 
             int ratio = 1000;
 
