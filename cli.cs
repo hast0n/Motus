@@ -2,77 +2,106 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 
 namespace Motus
 {
-    class cli
+    class CLI
     {
-        private core game;
-
-        public cli()
+        private Core game;
+        private int startTime;
+        private int lastGuessTime;
+        
+        public CLI()
         {
+            #region Game Paramter Initialization
+
             Console.Write("Sélectionnez le nombre de lettres du mots :\n? ");
+
             int letterNb = 0;
+
             while (letterNb < 6 && letterNb > 10)
             {
-                try
-                {
-                    letterNb = int.Parse(Console.ReadLine());
-                }
-                catch (FormatException)
-                {
-                    Console.Write("Mauvaise entrée ! Réessayez :\n? ");
-                }
+                letterNb = CheckIntInput("Mauvaise entrée ! Réessayez :\n? ");
             }
-            
-            
+
             Console.Write("Sélectionnez le nombre d'essais :\n? ");
+
             int triesNb = 0;
+
             while (triesNb <= letterNb && triesNb > 0)
             {
-                try
-                {
-                    triesNb = int.Parse(Console.ReadLine());
-                }
-                catch (FormatException)
-                {
-                    Console.Write("Mauvaise entrée ! Sélectionner un nombre inférieur au nombre de lettres dans le mot :\n? ");
-                }
+                triesNb = CheckIntInput("Mauvaise entrée ! Sélectionner un nombre inférieur au nombre de lettres dans le mot :\n? ");
             }
-            
-            
+ 
             Console.Write("Sélectionnez le niveau de difficulté :" +
                           "\n\t1. Première lettre donnée, pas de limite de temps" +
                           "\n\t2. Première lettre donnée, limite de temps (tzempsojdf)" +
                           "\n\t3. Une lettre donnée aléatoirement, limite de temps (kdjfg)" +
                           "\n=====\n? ");
+
             int difficultyLevel = 0;
+
             while (!new int[] {1,2,3}.Contains(difficultyLevel))
             {
-                try
-                {
-                    difficultyLevel = int.Parse(Console.ReadLine());
-                }
-                catch (FormatException)
-                {
-                    Console.Write("Mauvaise entrée ! Sélectionner un niveau de difficulté valide :\n? ");
-                }
+                difficultyLevel = CheckIntInput("Mauvaise entrée ! Sélectionner un niveau de difficulté valide :\n? ");
             }
-            
-            LaunchGame(letterNb, triesNb, difficultyLevel);
+
+            #endregion
+
+            // init game object
+            this.game = new Core(letterNb, triesNb, difficultyLevel);
         }
 
-        private void LaunchGame(int letterNb, int triesNb, int difficultyLevel)
+        public static int CheckIntInput(string err) 
         {
-            this.game = new core(letterNb, triesNb, difficultyLevel);
+            int bfr = 0;
 
-            // boucler sur l'input
+            try
+            {
+                bfr = int.Parse(Console.ReadLine());
+            }
+            catch (FormatException)
+            {
+                Console.Write(err);
+            }
 
+            return bfr;
         }
-        
+
+        public void Start()
+        {
+            // present word with one letter according to difficulty level
+            this.IntroduceGamePlay();
+
+            while (this.game.triesNb - this.game.triesDone > 0)
+            {
+                this.DisplayFeedback();
+
+                // this.game.CheckPosition(Console.ReadLine(),  - this.lastGuessTime);
+            }
+
+            this.EndGame();
+        }
+
+        public void EndGame() 
+        {
+            bool gw = this.game.isWon;
+            Console.WriteLine("C'est fini ! Vous {0}avez {1} réussi à deviner" +
+            "le mot mystère !", (gw) ? "" : "n'", (gw) ? "" : "pas");
+        }
+
+        private void IntroduceGamePlay()
+        {
+            Console.WriteLine("Bienvenue sur Motus ! " + 
+            "Votre but est de deviner le mot suivant " +
+            "en moins de {0} essais ", this.game.triesNb);
+        }
+
         private void DisplayFeedback()
         {
             string[] hist = this.game.History;
+            
             ConsoleColor[] colors = new ConsoleColor[]
             {
                 ConsoleColor.Red, 
