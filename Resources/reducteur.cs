@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +10,7 @@ using System.IO;
 
 namespace ReductionFichierTexte
 {
-    class Program
+    public class Reductor
     {
         public static void reduireFichier(string fichier_source, int ratio, string fichier_cible)
         {
@@ -47,11 +47,43 @@ namespace ReductionFichierTexte
                 Console.WriteLine(ex.Message);
             }
         }
-
-        static void Main(string[] args)
+        
+        public static void extraireMots(string fichier_source, string fichier_cible, int nbLettres)
         {
-            string fichierSource = "./Resources/dico_fr.txt";
-            string fichierCible = "./Resources/dico_reduit.txt";
+            try
+            {
+                Encoding encoding = System.Text.Encoding.GetEncoding("iso-8859-1");
+                StreamReader monStreamReader = new StreamReader(fichier_source, encoding);
+
+                StreamWriter monStreamWriter = File.CreateText(fichier_cible);
+
+                string mot = monStreamReader.ReadLine();
+
+                while (!string.IsNullOrEmpty(mot))
+                {
+                    if (mot.Length == nbLettres)
+                    {
+                        monStreamWriter.WriteLine(RemoveDiacritics(mot.Trim()));
+                        mot = monStreamReader.ReadLine();
+                    }
+
+                    mot = monStreamReader.ReadLine();
+                }
+
+                monStreamReader.Close();
+                monStreamWriter.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.Write("Une erreur est survenue au cours de l'opération :");
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        public static void LancerReduction()
+        {
+            string fichierSource = "dico_fr.txt";
+            string fichierCible = "dico_reduit.txt";
 
             int ratio = 1000;
 
@@ -64,11 +96,33 @@ But :
            
         
 
-            reduireFichier(fichierSource, ratio, fichierCible ) ;
+            //reduireFichier(fichierSource, ratio, fichierCible ) ;
+            for (int i = 4; i < 9; i++)
+            {
+                string cible = string.Format("Resources/dico_{0}.txt", i);
+                extraireMots(fichierSource, cible, i);
+            }
             Console.WriteLine("Réduction terminée.");
             Console.ReadKey();
 
 
         }
-}
+
+        static string RemoveDiacritics(string text)
+        {
+            var normalizedString = text.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        }
+    }
 }
