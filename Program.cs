@@ -1,15 +1,10 @@
-using System;
-using ReductionFichierTexte;
-
-namespace Motus 
+namespace Motus
 {
     class Program
     {
-        public static void Main ()
+        public static void Main()
         {
-            //Reductor.LancerReduction();
-
-            CLI gameInterface = new CLI();
+            var gameInterface = new GameLauncher();
             gameInterface.Start();
         }
     }
