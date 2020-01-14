@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Motus
 {
@@ -53,128 +54,146 @@ namespace Motus
 
     class Renderer
     {
-        private IDictionary<string, string> visualResources;
+        public IDictionary<string, string> VisualResources;
+        public IDictionary<string, string[]> ScreenResources;
+        public int WindowWidth;
+        public int WindowHeight;
+        public int GamePadding;
+        public int GameWidth;
+        public char HorizontalLineChar;
+        public char VerticalLineChar;
+        public char SplitChar;
+        public string PaddingString;
+        public string EmptyLine;
+        public string RegexTextAttributeDelimiterPattern;
+        public string RegexScreenParamDelimiterPattern;
+        public string RegexInputDelimiterPattern;
+        public string HorizontalBar;
 
-        public readonly int WindowWidth;
-        public readonly int WindowHeight;
+        //private string _title;
+        //public string Title
+        //{
+        //    get => _title;
+        //    private set { _title = SetLine(value); }
+        //}
         
-        public readonly int GamePadding;
-        public readonly int GameWidth;
-
-        public readonly char HorizontalLineChar;
-        public readonly char VerticalLineChar;
-        private readonly char _splitChar;
-        private readonly string _paddingString;
-        private readonly string _emptyLine;
-
-        private string _title;
-        public string Title
-        {
-            get => _title;
-            private set
-            {
-                string[] lines = value.Split(_splitChar);
-                StringBuilder titleString = new StringBuilder();
-
-                foreach (string line in lines.Where(l => !string.IsNullOrEmpty(l)))
-                {
-                    titleString.Append(SetLine(line));
-                }
-
-                _title = titleString.ToString();
-            }
-        }
-
-        public Renderer()
+        public void InitDefault()
         {
             #region InitVarRegion
-            WindowWidth = 120;
-            WindowHeight = 40;
-            GamePadding = 5;
-
             GameWidth = WindowWidth - GamePadding * 2 - 4;
-
-            HorizontalLineChar = '─';
-            VerticalLineChar = '│';
-            _splitChar = '\n';
-            _paddingString = new string(' ', GamePadding);
-            _emptyLine = SetLine("");
+            PaddingString = new string(' ', GamePadding);
+            EmptyLine = InnerSetLine("");
+            HorizontalBar = new string(HorizontalLineChar, GameWidth - 2);
             #endregion
 
-            _title = string.Empty;
-            string horizontalBar = new string(HorizontalLineChar, GameWidth - 2);
-
-            visualResources = new Dictionary<string, string>
-            {
-                {"topBar", $"{_paddingString}┌{horizontalBar}┐\n"},
-                {"bottomBar", $"{_paddingString}└{horizontalBar}┘\n"},
-                {"introString", "MO COMME MOTUS, MOTUS !"},
-                {
-                    // characters used : │ ─ ├ ┼ ┤ ┌ ┬ ┐ └ ┴ ┘
-                    "motusArt",
-                    string.Join(_splitChar, new []
-                    {
-                        " ┌─┐    ┌─┐   ┌────┐   ┌────────┐ ┌─┐   ┌─┐   ┌───────┐ ",
-                        " │ └─┐┌─┘ │ ┌─┘┌──┐└─┐ └──┐  ┌──┘ │ │   │ │  ┌┘┌──────┘ ",
-                        " │ ┌┐└┘┌┐ │ │  │  │  │    │  │    │ │   │ │  └┐└─────┐  ",
-                        " │ │└──┘│ │ │  │  │  │    │  │    │ │   │ │   └─────┐└┐ ",
-                        " │ │    │ │ └─┐└──┘┌─┘    │  │    └┐└───┘┌┘  ┌──────┘┌┘ ",
-                        " └─┘    └─┘   └────┘      └──┘     └─────┘   └───────┘  "
-                    })
-                },
-            };
-
-            Title = visualResources["motusArt"];
             Console.SetWindowSize(WindowWidth, WindowHeight);
         }
 
-        private string SetLine(string line)
+        public string InnerSetLine(string line)
         {
             return line.Encapsulate(GameWidth, VerticalLineChar).Pad(GamePadding);
         }
-        
-        private string SetLine(string[] lines)
+
+        public string SetLine(string linesString)
         {
-            StringBuilder formattedLines = new StringBuilder();
-
-            foreach (string line in lines)
+            try
             {
-                formattedLines.Append(SetLine(line));
-            }
+                string[] linesArray = linesString.Split(SplitChar)
+                    .Where(l => !string.IsNullOrEmpty(l)).ToArray();
 
-            return formattedLines.ToString();
+                if (linesArray.Length < 1)
+                {
+                    throw new StackOverflowException();
+                }
+
+                StringBuilder titleString = new StringBuilder();
+
+                foreach (string line in linesArray.Where(l => !string.IsNullOrEmpty(l)))
+                {
+                    titleString.Append(InnerSetLine(line));
+                }
+
+                return titleString.ToString();
+            }
+            catch (StackOverflowException)
+            {
+                // no multiline delimiter
+                return InnerSetLine(linesString);
+            }
         }
 
-        public void Render()
+        public void RenderScreen(string screen)
+        {
+            
+            
+            int charIndex = 0;
+            Dictionary<int, object> modifierDictionary = new Dictionary<int, object>();
+
+            while (modifierDictionary.Keys.Count < 1)
+            {
+                modifierDictionary = SetFrameString(screen);
+                
+            }
+            SetFrameString(screen, modifierDictionary);
+        }
+
+        private Dictionary<int, object> SetFrameString(string screen, Dictionary<int, object> modifierDictionary = null)
         {
             Console.Clear();
+
             StringBuilder output = new StringBuilder("\n");
 
-            string[] renderLines = new[]
+            modifierDictionary ??= new Dictionary<int, object>();
+
+            foreach (string lineIdentifier in ScreenResources[screen])
             {
-                #region Header
-                visualResources["topBar"],
-                Title,
-                visualResources["bottomBar"],
-                #endregion
+                var rawStrings = Regex.Match(lineIdentifier, RegexScreenParamDelimiterPattern).Groups;
+                string key = rawStrings.Count > 1 ? rawStrings[2].Value : lineIdentifier;
+                string line = VisualResources[key];
 
-                #region Body
-                visualResources["topBar"],
-                _emptyLine, _emptyLine, _emptyLine,
+                var paramStrings = Regex.Match(line, RegexInputDelimiterPattern).Groups;
+                
+                if (paramStrings.Count > 1)
+                {
+                    int modIndex = output.Length + paramStrings[0].Index;
+                    modifierDictionary[modIndex] = paramStrings[2].Value;
 
+                    line = Regex.Replace(line, RegexInputDelimiterPattern, "T");
+                    
+                    if (paramStrings[1].Value == "input")
+                    {
+                        
+                    }
+                    else if (paramStrings[1].Value == "color")
+                    {
+                        
+                    }
+                }
 
+                if (rawStrings.Count > 1)
+                {
+                    string repString = rawStrings[1].Value;
+                    int repN = string.IsNullOrEmpty(repString)
+                        ? 1
+                        : int.Parse(repString);
 
-                _emptyLine, _emptyLine, _emptyLine,
-                visualResources["bottomBar"],
-                #endregion
-            };
+                    for (int i = 0; i < repN; i++)
+                    {
+                        output.Append(SetLine(line));
+                    }
+                }
+                else if (VisualResources.ContainsKey(lineIdentifier))
+                {
+                    output.Append(VisualResources[lineIdentifier]);
+                }
+            }
 
-            foreach (string line in renderLines)
+            if (modifierDictionary.Keys.Count < 1)
             {
-                output.Append(line);
             }
 
             Console.WriteLine(output.ToString());
+            return modifierDictionary;
         }
     }
 }
