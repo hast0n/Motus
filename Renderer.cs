@@ -141,7 +141,7 @@ namespace Motus
         {
             Console.Clear();
 
-            StringBuilder output = new StringBuilder("\n");
+            StringBuilder output = new StringBuilder();
 
             modifierDictionary ??= new Dictionary<int, object>();
 

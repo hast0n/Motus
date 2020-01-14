@@ -111,6 +111,8 @@ namespace Motus
                 {
                     "WelcomeScreen", new []
                     {
+                        "empty",
+
                         "topBar", "[empty]", "[title]", "[empty]", "botBar",
                         
                         "empty",
