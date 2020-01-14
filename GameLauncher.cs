@@ -51,10 +51,10 @@ namespace Motus
                     "botBar",
                     $"{MyRenderer.PaddingString}└{MyRenderer.HorizontalBar}┘\n"
                 },
-                {
-                    "gameplaytopbar",
-                    $"┌{new string('─', _game.LetterNb * )}┐\n"
-                },
+                //{
+                //    "gameplaytopbar",
+                //    $"┌{new string('─', _game.LetterNb * )}┐\n"
+                //},
                 {
                     "gameplaybotbar",
                     $"{MyRenderer.PaddingString}└{MyRenderer.HorizontalBar}┘\n"

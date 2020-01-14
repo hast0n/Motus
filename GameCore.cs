@@ -55,10 +55,6 @@ namespace Motus
 
             return Dictionary[index];
         }
-        public string Test(string onte)
-        {
-            return onte;
-        }
 
         public string CheckPosition(string input, int time)
         {
