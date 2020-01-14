@@ -48,7 +48,7 @@ namespace Motus
 
         private string SelectWord(int letterNb)
         {
-            string filepath = "Resources/dico_{0}.txt";
+            string filepath = "../../../Resources/dico_{0}.txt";
             var file = new StreamReader(string.Format(filepath, letterNb)).ReadToEnd();
             Dictionary = file.Split("\r\n");
             int index = new Random().Next(0, Dictionary.Length - 1);
