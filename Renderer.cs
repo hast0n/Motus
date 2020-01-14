@@ -120,25 +120,46 @@ namespace Motus
             }
         }
 
-        public void RenderScreen(string screen)
+        public Dictionary<int, string> RenderScreen(string screen)
         {
-            Dictionary<int, object> modifierDictionary = new Dictionary<int, object>();
+            Dictionary<int, string> modifierDictionary;
+            modifierDictionary = SetFrameString(screen);
+            string input = string.Empty;
+            string currentRegexPattern = null;
 
-            while (modifierDictionary.Keys.Count < 1)
+            while (modifierDictionary.Count > 0 && !input.Equals("\r"))
             {
-                modifierDictionary = SetFrameString(screen);
-                
+                int modIndex = modifierDictionary.Keys.Min();
+                currentRegexPattern ??= modifierDictionary[modIndex];
+
+                bool hasNotSetValue = modifierDictionary[modIndex].Equals(currentRegexPattern);
+                input = $"{Console.ReadKey().KeyChar}";
+
+                while (!Regex.IsMatch(input, currentRegexPattern) || (hasNotSetValue && input.Equals("\r")))
+                {
+                    Console.Write("\b");
+                    input = $"{Console.ReadKey().KeyChar}";
+                }
+
+                if (!input.Equals("\r"))
+                {
+                    modifierDictionary[modIndex] = input;
+                    modifierDictionary = SetFrameString(screen, modifierDictionary);
+                }
+
             }
-            SetFrameString(screen, modifierDictionary);
+
+            return modifierDictionary;
         }
 
-        private Dictionary<int, object> SetFrameString(string screen, Dictionary<int, object> modifierDictionary = null)
+        private Dictionary<int, string> SetFrameString(string screen, Dictionary<int, string> modifierDictionary = null)
         {
             Console.Clear();
 
             StringBuilder output = new StringBuilder();
 
-            modifierDictionary ??= new Dictionary<int, object>();
+            modifierDictionary ??= new Dictionary<int, string>();
+            bool useModifiers = modifierDictionary.Count > 0;
 
             foreach (string lineIdentifier in ScreenResources[screen])
             {
@@ -151,18 +172,25 @@ namespace Motus
                 if (paramStrings.Count > 1)
                 {
                     int modIndex = output.Length + paramStrings[0].Index;
-                    modifierDictionary[modIndex] = paramStrings[2].Value;
-
-                    line = Regex.Replace(line, RegexInputDelimiterPattern, "T");
+                    if (!useModifiers)
+                    {
+                        modifierDictionary[modIndex] = paramStrings[2].Value;
+                    }
+                    string replacement = string.Empty;
                     
-                    if (paramStrings[1].Value == "input")
+                    if (useModifiers && paramStrings[1].Value == "input")
                     {
-                        
+                        replacement = modifierDictionary[modIndex];
                     }
-                    else if (paramStrings[1].Value == "color")
+                    else if (useModifiers && paramStrings[1].Value == "color")
                     {
-                        
+                        //replacement = ;
                     }
+                    else
+                    {
+                        replacement = " ";
+                    }
+                    line = Regex.Replace(line, RegexInputDelimiterPattern, replacement);
                 }
 
                 if (rawStrings.Count > 1)
@@ -183,7 +211,11 @@ namespace Motus
                 }
             }
 
-            if (modifierDictionary.Keys.Count < 1)
+            if (useModifiers)
+            {
+                
+            }
+            else
             {
             }
 

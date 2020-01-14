@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -31,13 +32,11 @@ namespace Motus
                 RegexTextAttributeDelimiterPattern = @"(<.*>)",
                 //RegexScreenParamDelimiterPattern = @"(?:([1-9]+)\*)?(?:([a-z]+)|(?:\[[a-z]+\]))",
                 RegexScreenParamDelimiterPattern = @"([1-9]*)\[([a-z]+)\]",
-                RegexInputDelimiterPattern = @"<(input|color):(int|string)>",
+                RegexInputDelimiterPattern = @"(?:<(input|color):(.+){1}>)|\\r"
             };
 
             MyRenderer.InitDefault();
             SetRendererResources();
-            SetGameParameters();
-            SetTimer();
         }
 
         private void SetRendererResources()
@@ -50,6 +49,14 @@ namespace Motus
                 },
                 {
                     "botBar",
+                    $"{MyRenderer.PaddingString}└{MyRenderer.HorizontalBar}┘\n"
+                },
+                {
+                    "gameplaytopbar",
+                    $"┌{new string('─', _game.LetterNb * )}┐\n"
+                },
+                {
+                    "gameplaybotbar",
                     $"{MyRenderer.PaddingString}└{MyRenderer.HorizontalBar}┘\n"
                 },
                 {
@@ -97,10 +104,21 @@ namespace Motus
                 {
                     "levelinput",
                     string.Join(MyRenderer.SplitChar, 
-                        "┌───┐", 
-                        "---> │ <input:int> │ <---",
+                        "┌───┐",
+                        "---> │ <input:[1-5]+|\\r> │ <---",
                         "└───┘"
                     )
+                },
+                {
+                    "gameplayhint",
+                    string.Join(MyRenderer.SplitChar, ""+
+                        "Saisissez les lettres qui composent selon vous le mot mystère !",
+                        "Saisissez-les unes par unes et appuyez sur [Entrée] quand vous avez terminé :"
+                        )
+                },
+                {
+                    "gameplayrow",
+                    $"│"
                 }
             };
 
@@ -123,12 +141,24 @@ namespace Motus
 
                         "[empty]", "botBar",
                     }
-                }
+                },
+                {
+                    "GameplayScreen", new []
+                    {
+                        "empty",
+
+                        "topBar", "[empty]", "[title]", "[empty]", "botBar",
+
+                        "empty",
+
+                        "topBar", "2[empty]",
+
+                        "[gameplayhint]", "3[empty]", "[levels]", "[empty]", "[levelinput]",
+
+                        "[empty]", "botBar",
+                    }
+                },
             };
-
-
-
-
 
 
         }
@@ -167,53 +197,32 @@ namespace Motus
             EndGame();
         }
 
-        private void SetGameParameters()
+        private void SetGameParameters(int difficultyLevel)
         {
-            #region Game Paramter Initialization
-
-            //int letterNb = 0;
-            //int triesNb = 8;
-            //int difficultyLevel = 0;
-
-            //Console.Write("Sélectionnez le niveau de difficulté :" +
-            //    "\n\t1. Mot de 4 lettres, première lettre donnée, pas de limite de temps, 6 essais." +
-            //    "\n\t2. Mot de 5 lettres, première lettre donnée, limite de temps (1 minute), 10 essais." +
-            //    "\n\t3. Mot de 8 lettres, une lettre donnée aléatoirement, limite de temps (45 secondes), 8 essais." +
-            //    "\n\t4. Mot de 6 lettres, une lettre donnée aléatoirement, limite de temps (30 secondes), 8 essais." +
-            //    "\n\t5. Mot de 5 lettres, une lettre donnée aléatoirement, limite de temps (15 secondes), 8 essais." +
-            //    "\n=====\n? ");
-
-            //while (!Enumerable.Range(1, 5).Contains(difficultyLevel)) 
-            //{
-            //    difficultyLevel = CheckIntInput("Mauvaise entrée ! Sélectionner un niveau de difficulté valide :\n? ");
-            //}
-
-            //switch (difficultyLevel)
-            //{
-            //    case 1:
-            //        letterNb = 4;
-            //        triesNb = 6;
-            //        break;
-            //    case 2:
-            //        letterNb = 5;
-            //        triesNb = 10;
-            //        break;
-            //    case 3:
-            //        letterNb = 8;
-            //        break;
-            //    case 4:
-            //        letterNb = 6;
-            //        break;
-            //    case 5:
-            //        letterNb = 5;
-            //        break;
-            //}
-
-            #endregion
-
-            // init game object
-            //this._game = new GameCore(letterNb, triesNb, difficultyLevel);
-            this._game = new GameCore(5, 5, 1);
+            int letterNb = 0;
+            int triesNb = 8;
+            switch (difficultyLevel)
+            {
+                case 1:
+                    letterNb = 4;
+                    triesNb = 6;
+                    break;
+                case 2:
+                    letterNb = 5;
+                    triesNb = 10;
+                    break;
+                case 3:
+                    letterNb = 8;
+                    break;
+                case 4:
+                    letterNb = 6;
+                    break;
+                case 5:
+                    letterNb = 5;
+                    break;
+            }
+            this._game = new GameCore(letterNb, triesNb, difficultyLevel);
+            SetTimer();
         }
 
         public static int CheckIntInput(string err) 
@@ -235,29 +244,30 @@ namespace Motus
 
         public void Start()
         {
-            this.IntroduceGamePlay();
+            IDictionary<int, string> myScreenParams;
 
-            this._isLive = true;
-            this._lastGuessTime = this._watch.ElapsedMilliseconds;
+            myScreenParams = MyRenderer.RenderScreen("WelcomeScreen");
+            int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()]);
+            SetGameParameters(difficultyLevel);
 
-            MyRenderer.RenderScreen("WelcomeScreen");
-
+            _isLive = true;
+            _lastGuessTime = this._watch.ElapsedMilliseconds;
 
             while (this._game.TriesNb - this.NbTried > 0 && this._isLive) // prevent cycling after a correct answer
             {
 
-                string input = Console.ReadLine();
-                while (!this._game.Dictionary.Contains(input?.ToLower()) && !this._isLive) // prevent keeping cycling after timeout
-                {
-                    Console.Write("Le mot sélectionné n'est pas valide, réessayez :\n");
-                    input = Console.ReadLine();
-                }
+                myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
+                //while (!this._game.Dictionary.Contains(input?.ToLower()) && !this._isLive) // prevent keeping cycling after timeout
+                //{
+                //    Console.Write("Le mot sélectionné n'est pas valide, réessayez :\n");
+                //    input = Console.ReadLine();
+                //}
 
-                if (!this._isLive) { break; } // get out of gameplay if
+                //if (!this._isLive) { break; } // get out of gameplay if
 
-                double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
-                this._game.CheckPosition(input?.ToUpper(), (int) time);
-                this._lastGuessTime = time;
+                //double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
+                //this._game.CheckPosition(input?.ToUpper(), (int) time);
+                //this._lastGuessTime = time;
                 
                 //MyRenderer.RenderScreen(MyRenderer.InGameScreen);
             }
