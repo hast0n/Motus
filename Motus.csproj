@@ -1,9 +1,39 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <!--<TargetFramework>netcoreapp2.2</TargetFramework>-->
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\netcoreapp3.1\dico_fr.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\dico_reduit.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\Motus.deps.json" />
+    <Content Include="bin\Debug\netcoreapp3.1\Motus.runtimeconfig.dev.json" />
+    <Content Include="bin\Debug\netcoreapp3.1\Motus.runtimeconfig.json" />
+    <Content Include="bin\Debug\netcoreapp3.1\Resources\dico_4.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\Resources\dico_5.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\Resources\dico_6.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\Resources\dico_7.txt" />
+    <Content Include="bin\Debug\netcoreapp3.1\Resources\dico_8.txt" />
+    <Content Include="bin\Release\netcoreapp3.1\dico_fr.txt" />
+    <Content Include="bin\Release\netcoreapp3.1\Motus.deps.json" />
+    <Content Include="bin\Release\netcoreapp3.1\Motus.runtimeconfig.dev.json" />
+    <Content Include="bin\Release\netcoreapp3.1\Motus.runtimeconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bin\Debug\netcoreapp3.1\Motus.dll" />
+    <None Include="bin\Debug\netcoreapp3.1\Motus.exe" />
+    <None Include="bin\Debug\netcoreapp3.1\Motus.pdb" />
+    <None Include="bin\Release\netcoreapp3.1\Motus.dll" />
+    <None Include="bin\Release\netcoreapp3.1\Motus.exe" />
+    <None Include="bin\Release\netcoreapp3.1\Motus.pdb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Debug\netcoreapp2.2\" />
+  </ItemGroup>
 
 </Project>
