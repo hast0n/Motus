@@ -18,10 +18,7 @@ namespace Motus
         // string element in a string array
         public bool IsWon => this.History.Where(c => c != null).ToArray()
                     .Last().Split("|")[0].Equals(this.Word);
-        public string Test( string test)
-        {
-            return test;
-        }
+  
         public GameCore(int letterNb, int triesNb, int difficultyLevel)
         {
             this.LetterNb = letterNb;
