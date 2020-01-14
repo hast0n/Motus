@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,6 @@ namespace Motus
         public static string Encapsulate(this string line, int width, char symb)
         {
             string trimmedLine = line.Trim();
-            int lineLength = trimmedLine.Length;
             int padding;
 
             if (trimmedLine.Length > width)
@@ -26,7 +24,7 @@ namespace Motus
                 padding = (width - trimmedLine.Length) / 2 - 1;
             }
 
-            bool colParity = trimmedLine.isOddLength() != width.isOdd();
+            bool colParity = trimmedLine.IsOddLength() != width.IsOdd();
 
             string paddingString = new string(' ', padding);
 
@@ -41,12 +39,12 @@ namespace Motus
             return $"{new string(' ', padding)}{line}";
         }
 
-        public static bool isOddLength(this string value)
+        public static bool IsOddLength(this string value)
         {
             return value.Length % 2 != 0;
         }
         
-        public static bool isOdd(this int value)
+        public static bool IsOdd(this int value)
         {
             return value % 2 != 0;
         }
@@ -124,9 +122,6 @@ namespace Motus
 
         public void RenderScreen(string screen)
         {
-            
-            
-            int charIndex = 0;
             Dictionary<int, object> modifierDictionary = new Dictionary<int, object>();
 
             while (modifierDictionary.Keys.Count < 1)
