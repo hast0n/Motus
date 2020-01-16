@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;// indispensable pour lire et ecrire un fichier
 using System.Linq;
 using System.Text;
 using System.Timers;
+//using System.Xml.Linq;//csv
+
 
 namespace Motus
 {
@@ -37,6 +40,11 @@ namespace Motus
 
             MyRenderer.InitDefault();
             SetRendererResources();
+
+            //tests csv
+            //string[] tab = { "chaud|00212|6000", "chute|00000|12000" };
+            string[] tab = { "chien|00011|6000", "chine|00000|13000" };
+            // SaveToCsv(true, tab,1,2);
         }
 
         private void SetRendererResources()
@@ -320,6 +328,52 @@ namespace Motus
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.WriteLine();
             }
+        }
+        /*public void SaveToCsv() 
+       {
+           string csvpath = "../../../Resources/data.csv";
+           if (this.IsWon)//On sauvegarde les données que si la partie est gagnée
+           {
+               StringBuilder csvnewline = new StringBuilder();
+               string addline = '"'+this._game.DifficultyLevel.ToString()+','+this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2] +',' +  this.NbTried'"';
+               csvnewline.AppendLine(addline);
+               File.AppendAllText(csvpath,csvnewline.ToString());
+           }
+
+       }*/
+
+       /* private void SaveToCsv(bool won, string[] histo, int niv, int nbtenta)
+        {
+            string csvpath = "../../../Resources/data.csv";
+
+            if (won)//On sauvegarde les données que si la partie est gagnée
+            {
+                string[] addline = { niv.ToString(), histo.Where(c => c != null).ToArray().Last().Split("|")[2], nbtenta.ToString() };
+                File.AppendAllLines(csvpath, addline);       
+                //string addline = "\""+niv.ToString()+","+histo.Where(c => c != null).ToArray().Last().Split("|")[2]+","+nbtenta.ToString()+"\"";
+                //File.AppendAllText(csvpath, addline};  
+            }
+
+        }*/
+        private void SaveData(bool won, string[] histo, int niv, int nbtenta)
+        {
+            string datapath = "../../../Resources/data.txt";
+            if (won) // sauvegarde des données si la partie est gagnée
+            {
+                //niveau, temps total, temps moyen par mot, nb de tendative
+            }
+        }
+        public void Statistics(int level)
+        {
+            Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/100 );
+            int avgtword = 0;
+            int avgttotal = 0;
+            //parcours du fichier pour calcul de la moyenne de temps par mot et de la moyenne temps total
+            Console.WriteLine("Pour le niveau choisi {0}, le temps moyen par était de {1}",level, avgtword,avgttotal);
+            //Diagramme en baton horizontal pour décrire le taux de parties plsu rapides et de parties plus lentes Voir si faut le déplacer
+            // Parcours du fichier pour conpter les valeurs inférieures à la moyenne.
+            // regarder le renderer pour construire un diagramme à baton horizontal ou juste faire avec ConsoleWrite?
+            Console.ReadLine();
         }
     }
 }
