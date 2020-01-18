@@ -425,6 +425,7 @@ namespace Motus
 
                 Console.WriteLine("Pour le niveau {0} choisi, le temps moyen par tentative était de {1} secondes, le temps moyen par partie était de {2} secondes \n", level, Math.Round((avgTimeTry / 1000), 1).ToString("0.0"), Math.Round((avgTimeTot / 1000), 1).ToString("0.0"));
 
+                // a : average try, b: average time per try, c : average overall time 
                 double aInf = (infAvgTry / (lines.Length - 4) * 100);
                 double aIdem = (idemAvgTry / (lines.Length - 4) * 100);
                 double aSup = (supAvgTry/(lines.Length-4)*100);
