@@ -40,13 +40,6 @@ namespace Motus
 
             MyRenderer.InitDefault();
             SetRendererResources();
-
-            
-
-            //tests csv
-            //string[] tab = { "chute|00000|0000","chaud|00212|6000", "chute|00000|12000" };
-            string[] tab = { "chine|00000|0000","chien|00011|6000", "chine|00000|13000" };
-            //SaveData(true, tab, 1, (tab.Length-1));
         }
 
         private void SetRendererResources()
@@ -275,7 +268,8 @@ namespace Motus
             Console.WriteLine("C'est fini ! Vous {0}avez {1} réussi à deviner " +
             "le mot mystère qui était \"{2}\" !", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word);
 
-            //SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
+            SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
+            Statistics(this._game.DifficultyLevel, this._game.History) ;
         }
         
         private void DisplayFeedback()
@@ -331,9 +325,8 @@ namespace Motus
             }
             
 
-            if (won) //if the game is won, the game data are saved
+            if (won) //if the game is won, the game data are saved : Difficulty level, overall time, average time by word, number of try
             {
-                //niveau, temps total, temps moyen par mot, nb de tentative
                 // j'ai un doute sur l'enregistrement du temps dans history à quoi il correspnd
                 
                 //Average time by word on this game
@@ -356,62 +349,303 @@ namespace Motus
                     Console.WriteLine(ex.Message);
                 }
             }
-            Console.ReadLine();
+            //Console.ReadLine();
         }
-        
-        
 
-
-        public void Statistics(int level)
+        public void Statistics(int level, string[] tab)
         {
-            Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/100 );
-            int avgtword = 0;
-            int avgttotal = 0;
-            //parcours du fichier pour calcul de la moyenne de temps par mot et de la moyenne temps total
-            Console.WriteLine("Pour le niveau choisi {0}, le temps moyen par était de {1}",level, avgtword,avgttotal);
+            string datapath = "../../../Resources/data.txt";
 
-            //string filepath ="../../../Resources/data.txt";
-            /*List<string> lines = File.ReadAllLines(filepath).ToList();
+            int nbtry = tab.Length - 1;
 
-            foreach (string i  in lines)
-            {
-                Console.WriteLine(i);
-            }
+            double avgtry = 0;
+            double avgtword = 0;
+            double avgttotal = 0;
 
-            //Diagramme en baton horizontal pour décrire le taux de parties plsu rapides et de parties plus lentes Voir si faut le déplacer
-            // Parcours du fichier pour conpter les valeurs inférieures à la moyenne.
-            // regarder le renderer pour construire un diagramme à baton horizontal ou juste faire avec ConsoleWrite?
-            Console.ReadLine();
-            */
-            /*
             try
             {
-                // Création d'une instance de StreamReader pour permettre la lecture de notre fichier source 
-                System.Text.Encoding encoding = System.Text.Encoding.GetEncoding("iso-8859-1");
-                StreamReader monStreamReader = new StreamReader(filepath, encoding);
-
-                int nbMots = 0;
-                string mot = monStreamReader.ReadLine();
-
-                // Lecture de tous les mots du fichier (un par lignes) 
-                while (mot != null)
-                {
-                    nbMots++;
-                    if (mot.Where(c => c != null).ToArray().Last().Split("|")[0] == level) ;      
-                        
-
-                }
-                // Fermeture du StreamReader (attention très important) 
-                monStreamReader.Close();
+                string[] lines = File.ReadAllLines(datapath);
                 
+                for (int i=3;i<lines.Length;i++)
+                {
+                    int t = int.Parse(lines[i].Split(",")[0]);
+                    if (t==level)
+                    { 
+                        avgttotal+=int.Parse(lines[i].Split(",")[1]);
+                        avgtword += int.Parse(lines[i].Split(",")[2]);
+                        avgtry += int.Parse(lines[i].Split(",")[3]);
+                    }
+                }
+                avgttotal /= (lines.Length - 3);
+                avgtword /= (lines.Length - 3);
+                avgtry /= (lines.Length - 3);
+
+                double infavgtry = 0;
+                double infavgtword = 0;
+                double infavgttime = 0;
+                double memavgtry = 0;
+                double memavgtword = 0;
+                double memavgttime = 0;
+
+
+                for (int i=3; i<lines.Length-1;i++)//doesn't count the last game which is the game studied
+                {
+                    if (int.Parse(lines[i].Split(",")[3])<avgtry)
+                    {
+                        infavgtry += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[3]) == avgtry)
+                    {
+                        memavgtry += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[1])<avgttotal)
+                    {
+                        infavgttime += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[1]) == avgttotal)
+                    {
+                        memavgttime += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[2])<avgtword)
+                    {
+                        infavgtword += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[2]) == avgtword)
+                    {
+                        memavgtword += 1;
+                    }
+                }
+                
+                double supavgtry = lines.Length-4-infavgtry- memavgtry;
+                double supavgtword = lines.Length - 4 -infavgtword - memavgtword;
+                double supavgttime = lines.Length - 4 -infavgttime - memavgttime;
+                
+                Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", nbtry, int.Parse(tab.Where(c => c != null).ToArray().Last().Split("|")[2]) / 1000);
+                //Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/1000 );
+
+                Console.WriteLine("Pour le niveau {0} choisi, le temps moyen par tentative était de {1} secondes, le temps moyen par partie était de {2} secondes \n", level, Math.Round((avgtword / 1000), 1).ToString("0.0"), Math.Round((avgttotal / 1000), 1).ToString("0.0"));
+
+                double ainf = (infavgtry / (lines.Length - 4) * 100);
+                double ameme = (memavgtry / (lines.Length - 4) * 100);
+                double asup = (supavgtry/(lines.Length-4)*100);
+                double binf = (infavgtword/(lines.Length-4)*100);
+                double bmeme = (memavgtword / (lines.Length - 4) * 100);
+                double bsup = (supavgtword/(lines.Length-4)*100);
+                double cinf = (infavgttime/(lines.Length-4)*100);
+                double cmeme = (memavgttime / (lines.Length - 4) * 100);
+                double csup = (supavgttime/(lines.Length-4)*100);
+                
+                #region Ouhlacata
+                /*MyRenderer.VisualResources = new Dictionary<string, string>
+                {
+                    {
+                    "bar",
+                    "_"
+                    },
+                    {
+                    "vbar",
+                    "|"
+                    },
+                    {
+                    "angle1",
+                    "┌"
+                    },
+                    {
+                    "angle2",
+                    "┐"
+                    },
+                    {
+                    "angle3",
+                    "└"
+                    },
+                    {
+                    "angle4",
+                    "┘"
+                    },
+                    {
+                        "tentatives",
+                        string.Join(MyRenderer.SplitChar,
+                            "Nombres de tentatives")
+                    },
+                    {
+                        "tempstent",
+                        string.Join(MyRenderer.SplitChar,
+                            "Temps moyen par tentative")
+                    },
+                    {
+                        "tempstot",
+                        string.Join(MyRenderer.SplitChar,
+                            "Temps total moyen")
+                    },
+                    {
+                        "empty",
+                        "\n"
+                    },
+                    {
+                        "stattrya",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            infavgtry/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                            )
+                    },
+                    {
+                        "stattryb",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            supavgtry/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                            )
+                    },
+                    {
+                        "statttota",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            infavgttime/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                            )
+                    },
+                    {
+                        "statttotb",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            supavgttime/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                            )
+                    },
+                    {
+                        "stattmoya",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            infavgtword/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                            )
+                    },
+                    {
+                        "stattmoyb",
+                        string.Join(MyRenderer.SplitChar, ""+
+                            supavgtword/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                            )
+                    }
+                };
+                MyRenderer.ScreenResources = new Dictionary<string, string[]>()
+                {
+                    {
+                        
+                        "StatScreen", new []
+                        {
+                            "tentatives",
+                            
+                            "stattrya",
+                            "angle1","4[bar]", "angle2",
+                            "vbar","[empty]","vbar",
+                            "angle3","3[bar]",  "angle4",
+                            "stattryb",
+
+                            "empty",
+
+                            "tempstent",
+                            "stattmoya",
+                            "angle1","[bar]",  "angle2",
+                            "vbar","[empty]","vbar",
+                            "angle3","7[bar]",  "angle4",
+                            "stattmoyb",
+
+                            "empty",
+
+                            "tempstot",
+                            "statttota",
+                            "angle1","bar",  "angle2",
+                            "vbar","[empty]","vbar",
+                            "angle3","bar",  "angle4",
+                            "statttotb",
+                        }
+                    }
+                };
+
+                IDictionary<int, string[]> myScreenParams;
+                myScreenParams = MyRenderer.RenderScreen("StatScreen");*/
+                #endregion
+
+                Console.WriteLine("Nombres de tentatives");
+
+                Console.BackgroundColor = ConsoleColor.Cyan;
+                for (int i = 0; i < ainf+1; i+=2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont réalisé moins de tentatives que vous\n", ainf);
+
+                Console.BackgroundColor = ConsoleColor.Cyan;
+                for (int i = 0; i < ameme + 1; i+=2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont réalisé autant de tentatives que vous\n", ameme);
+
+                Console.BackgroundColor = ConsoleColor.Cyan;
+                for (int i = 0; i < asup+1; i+=2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont réalisé plus de tentatives que vous\n", asup);
+
+    
+                Console.WriteLine("Temps moyen par tentative ");
+
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                for (int i = 0; i < binf + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps par tentative inférieur au votre\n", Math.Round(binf, 1).ToString("0.0"));
+
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                for (int i = 0; i < bmeme + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps par tentative identique au votre\n", Math.Round(bmeme, 1).ToString("0.0"));
+
+                Console.BackgroundColor = ConsoleColor.DarkCyan;
+                for (int i = 0; i < bsup + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont un temps par tentative supérieur au votre\n", Math.Round(bsup, 1).ToString("0.0"));
+
+
+                Console.WriteLine("Temps total moyen");
+
+                Console.BackgroundColor = ConsoleColor.Green;
+                for (int i = 0; i < cinf + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps de résolution inférieur au votre\n", Math.Round(cinf, 1).ToString("0.0"));
+
+                Console.BackgroundColor = ConsoleColor.Green;
+                for (int i = 0; i < cmeme + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps de résolution identique au votre\n", Math.Round(cmeme, 1).ToString("0.0"));
+
+                Console.BackgroundColor = ConsoleColor.Green;
+                for (int i = 0; i < csup + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont un temps de résolution supérieur au votre\n", Math.Round(csup, 1).ToString("0.0"));
+
+
+
             }
             catch (Exception ex)
             {
-                // Code exécuté en cas d'exception 
                 Console.Write("Une erreur est survenue au cours de l'opération :");
                 Console.WriteLine(ex.Message);
             }
-            */
+            //Console.ReadLine();
         }
     }
 }
