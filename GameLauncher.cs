@@ -41,10 +41,12 @@ namespace Motus
             MyRenderer.InitDefault();
             SetRendererResources();
 
+            
+
             //tests csv
-            //string[] tab = { "chaud|00212|6000", "chute|00000|12000" };
-            string[] tab = { "chien|00011|6000", "chine|00000|13000" };
-            // SaveToCsv(true, tab,1,2);
+            //string[] tab = { "chute|00000|0000","chaud|00212|6000", "chute|00000|12000" };
+            string[] tab = { "chine|00000|0000","chien|00011|6000", "chine|00000|13000" };
+            //SaveData(true, tab, 1, (tab.Length-1));
         }
 
         private void SetRendererResources()
@@ -272,6 +274,8 @@ namespace Motus
             bool gw = this._game.IsWon;
             Console.WriteLine("C'est fini ! Vous {0}avez {1} réussi à deviner " +
             "le mot mystère qui était \"{2}\" !", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word);
+
+            //SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
         }
         
         private void DisplayFeedback()
@@ -305,40 +309,59 @@ namespace Motus
                 Console.WriteLine();
             }
         }
-        /*public void SaveToCsv() 
-       {
-           string csvpath = "../../../Resources/data.csv";
-           if (this.IsWon)//On sauvegarde les données que si la partie est gagnée
-           {
-               StringBuilder csvnewline = new StringBuilder();
-               string addline = '"'+this._game.DifficultyLevel.ToString()+','+this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2] +',' +  this.NbTried'"';
-               csvnewline.AppendLine(addline);
-               File.AppendAllText(csvpath,csvnewline.ToString());
-           }
-
-       }*/
-
-       /* private void SaveToCsv(bool won, string[] histo, int niv, int nbtenta)
-        {
-            string csvpath = "../../../Resources/data.csv";
-
-            if (won)//On sauvegarde les données que si la partie est gagnée
-            {
-                string[] addline = { niv.ToString(), histo.Where(c => c != null).ToArray().Last().Split("|")[2], nbtenta.ToString() };
-                File.AppendAllLines(csvpath, addline);       
-                //string addline = "\""+niv.ToString()+","+histo.Where(c => c != null).ToArray().Last().Split("|")[2]+","+nbtenta.ToString()+"\"";
-                //File.AppendAllText(csvpath, addline};  
-            }
-
-        }*/
+        
         private void SaveData(bool won, string[] histo, int niv, int nbtenta)
         {
             string datapath = "../../../Resources/data.txt";
-            if (won) // sauvegarde des données si la partie est gagnée
+            if (File.Exists(datapath)==false)//if data.txt does not exist, create data.txt
             {
-                //niveau, temps total, temps moyen par mot, nb de tendative
+                try
+                {
+                    TextWriter newfile = new StreamWriter(datapath, true);
+                    newfile.WriteLine("Enregistrement(s) de vos statistiques de jeu");
+                    newfile.WriteLine("Niveau, Temps total de résolution, Temps moyen par mot, Nombre de tentative(s)");
+                    newfile.WriteLine();
+                    newfile.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("Une erreur est survenue au cours de l'opération de création du fichier data.txt :");
+                    Console.WriteLine(ex.Message);
+                }
             }
+            
+
+            if (won) //if the game is won, the game data are saved
+            {
+                //niveau, temps total, temps moyen par mot, nb de tentative
+                // j'ai un doute sur l'enregistrement du temps dans history à quoi il correspnd
+                
+                //Average time by word on this game
+                int avgtime = 0;
+                for (int i = 1; i < histo.Length; i++)
+                {
+                    avgtime += (int.Parse(histo[i].Split("|")[2]) - int.Parse(histo[i - 1].Split("|")[2]));
+                }
+                avgtime /= (histo.Length - 1);
+                string entry = String.Format("{0},{1},{2},{3}", niv.ToString(), histo.Where(c => c != null).ToArray().Last().Split("|")[2], avgtime.ToString(), nbtenta.ToString() );
+
+                try
+                {
+                    using StreamWriter writtingon = File.AppendText(datapath);
+                    writtingon.WriteLine(entry);
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("Une erreur est survenue au cours de l'opération de sauvegarde :");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            Console.ReadLine();
         }
+        
+        
+
+
         public void Statistics(int level)
         {
             Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/100 );
@@ -346,10 +369,49 @@ namespace Motus
             int avgttotal = 0;
             //parcours du fichier pour calcul de la moyenne de temps par mot et de la moyenne temps total
             Console.WriteLine("Pour le niveau choisi {0}, le temps moyen par était de {1}",level, avgtword,avgttotal);
+
+            //string filepath ="../../../Resources/data.txt";
+            /*List<string> lines = File.ReadAllLines(filepath).ToList();
+
+            foreach (string i  in lines)
+            {
+                Console.WriteLine(i);
+            }
+
             //Diagramme en baton horizontal pour décrire le taux de parties plsu rapides et de parties plus lentes Voir si faut le déplacer
             // Parcours du fichier pour conpter les valeurs inférieures à la moyenne.
             // regarder le renderer pour construire un diagramme à baton horizontal ou juste faire avec ConsoleWrite?
             Console.ReadLine();
+            */
+            /*
+            try
+            {
+                // Création d'une instance de StreamReader pour permettre la lecture de notre fichier source 
+                System.Text.Encoding encoding = System.Text.Encoding.GetEncoding("iso-8859-1");
+                StreamReader monStreamReader = new StreamReader(filepath, encoding);
+
+                int nbMots = 0;
+                string mot = monStreamReader.ReadLine();
+
+                // Lecture de tous les mots du fichier (un par lignes) 
+                while (mot != null)
+                {
+                    nbMots++;
+                    if (mot.Where(c => c != null).ToArray().Last().Split("|")[0] == level) ;      
+                        
+
+                }
+                // Fermeture du StreamReader (attention très important) 
+                monStreamReader.Close();
+                
+            }
+            catch (Exception ex)
+            {
+                // Code exécuté en cas d'exception 
+                Console.Write("Une erreur est survenue au cours de l'opération :");
+                Console.WriteLine(ex.Message);
+            }
+            */
         }
     }
 }
