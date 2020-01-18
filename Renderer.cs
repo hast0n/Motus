@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -35,7 +36,6 @@ namespace Motus
 
         public static string Pad(this string line, int padding)
         {
-            
             return $"{new string(' ', padding)}{line}";
         }
 
@@ -66,25 +66,47 @@ namespace Motus
         public string RegexTextAttributeDelimiterPattern;
         public string RegexScreenParamDelimiterPattern;
         public string RegexInputDelimiterPattern;
+        public string RegexInputParamDelimiterPattern;
         public string HorizontalBar;
+        public string DefaultInputValue;
 
-        //private string _title;
-        //public string Title
-        //{
-        //    get => _title;
-        //    private set { _title = SetLine(value); }
-        //}
-        
+        public Dictionary<string, ConsoleColor> ConsoleColors;
+
         public void InitDefault()
         {
             #region InitVarRegion
             GameWidth = WindowWidth - GamePadding * 2 - 4;
             PaddingString = new string(' ', GamePadding);
-            EmptyLine = InnerSetLine("");
             HorizontalBar = new string(HorizontalLineChar, GameWidth - 2);
+            ConsoleColors = new Dictionary<string, ConsoleColor>()
+            {
+                {"red", ConsoleColor.Red},
+                {"cyan", ConsoleColor.Cyan},
+                {"blue", ConsoleColor.Blue},
+                {"gray", ConsoleColor.Gray},
+                {"green", ConsoleColor.Green},
+                {"black", ConsoleColor.Black},
+                {"white", ConsoleColor.White},
+                {"yellow", ConsoleColor.Yellow},
+                {"magenta", ConsoleColor.Magenta},
+                {"darkred", ConsoleColor.DarkRed},
+                {"darkblue", ConsoleColor.DarkBlue},
+                {"darkcyan", ConsoleColor.DarkCyan},
+                {"darkgray", ConsoleColor.DarkGray},
+                {"darkgreen", ConsoleColor.DarkGreen},
+                {"darkyellow", ConsoleColor.DarkYellow},
+                {"darkmagenta", ConsoleColor. DarkMagenta},
+            };
+            EmptyLine ??= InnerSetLine("");
+            DefaultInputValue ??= " ";
             #endregion
 
             Console.SetWindowSize(WindowWidth, WindowHeight);
+        }
+
+        public void SetColor(string color)
+        {
+            Console.BackgroundColor = ConsoleColors[color];
         }
 
         public string InnerSetLine(string line)
@@ -120,45 +142,98 @@ namespace Motus
             }
         }
 
-        public Dictionary<int, string> RenderScreen(string screen)
+        public Dictionary<int, string[]> RenderScreen(string screen)
         {
-            Dictionary<int, string> modifierDictionary;
-            modifierDictionary = SetFrameString(screen);
+            #region Render Period Initialization
+            Dictionary<int, string[]> modifierDictionary = new Dictionary<int, string[]>();
             string input = string.Empty;
-            string currentRegexPattern = null;
+            string[] strings = new [] {"\b", "\r"};
 
-            while (modifierDictionary.Count > 0 && !input.Equals("\r"))
+            /*int LastUnsetInput()
             {
-                int modIndex = modifierDictionary.Keys.Min();
-                currentRegexPattern ??= modifierDictionary[modIndex];
+                return modifierDictionary.OrderBy(x => x.Key)
+                .LastOrDefault(x => string.IsNullOrEmpty(x.Value[0])).Key;
+            }*/
+            bool HasSetModifiers()
+            {
+                return modifierDictionary.Count(x => !x.Value[0].Equals(DefaultInputValue)) > 0;
+            }
+            int FirstUnsetInput()
+            {
+                return modifierDictionary.OrderBy(x => x.Key)
+                .FirstOrDefault(x => x.Value[0].Equals(DefaultInputValue)).Key;
+            }
+            int LastSetInput()
+            {
+                return modifierDictionary.OrderBy(x => x.Key)
+                    .LastOrDefault(x => !x.Value[0].Equals(DefaultInputValue)).Key;
+            }
+            void WipeLastInput()
+            {
+                try
+                {
+                    modifierDictionary[LastSetInput()][0] = DefaultInputValue;
+                }
+                catch (KeyNotFoundException) { /* DO NOTHING */ }
+            }
+            #endregion
 
-                bool hasNotSetValue = modifierDictionary[modIndex].Equals(currentRegexPattern);
+            SetFrame(screen, ref modifierDictionary);
+
+            while (true)
+            {
+                int modIndex = FirstUnsetInput();
+
+                if (modIndex == 0)
+                {
+                    while (!strings.Contains(input))
+                    {
+                        input = $"{Console.ReadKey().KeyChar}";
+                        Console.Write("\b");
+                    }
+
+                    if (input.Equals("\r"))
+                    {
+                        break;
+                    }
+
+                    WipeLastInput();
+                    SetFrame(screen, ref modifierDictionary);
+                    continue;
+                }
+
+                string currentRegexPattern = modifierDictionary[modIndex][1];
                 input = $"{Console.ReadKey().KeyChar}";
 
-                while (!Regex.IsMatch(input, currentRegexPattern) || (hasNotSetValue && input.Equals("\r")))
+                while (!Regex.IsMatch(input, currentRegexPattern))
                 {
                     Console.Write("\b");
+
+                    if (input.Equals("\b") && HasSetModifiers())
+                    {
+                        WipeLastInput();
+                        break;
+                    }
+
                     input = $"{Console.ReadKey().KeyChar}";
                 }
 
-                if (!input.Equals("\r"))
+                if (!input.Equals("\b"))
                 {
-                    modifierDictionary[modIndex] = input;
-                    modifierDictionary = SetFrameString(screen, modifierDictionary);
+                    modifierDictionary[modIndex][0] = input;
                 }
-
+                
+                SetFrame(screen, ref modifierDictionary);
             }
 
             return modifierDictionary;
         }
 
-        private Dictionary<int, string> SetFrameString(string screen, Dictionary<int, string> modifierDictionary = null)
+        private void SetFrame(string screen, ref Dictionary<int, string[]> modifierDictionary)
         {
             Console.Clear();
 
             StringBuilder output = new StringBuilder();
-
-            modifierDictionary ??= new Dictionary<int, string>();
             bool useModifiers = modifierDictionary.Count > 0;
 
             foreach (string lineIdentifier in ScreenResources[screen])
@@ -167,30 +242,38 @@ namespace Motus
                 string key = rawStrings.Count > 1 ? rawStrings[2].Value : lineIdentifier;
                 string line = VisualResources[key];
 
-                var paramStrings = Regex.Match(line, RegexInputDelimiterPattern).Groups;
-                
-                if (paramStrings.Count > 1)
+
+                Regex r = new Regex(RegexInputDelimiterPattern);
+                var match = r.Match(line);
+
+                while (match.Success)
                 {
-                    int modIndex = output.Length + paramStrings[0].Index;
+                    var group = Regex.Match(match.Value, RegexInputParamDelimiterPattern).Groups;
+                    int modIndex = output.Length + match.Index;
+                    string replacement;
+                        
                     if (!useModifiers)
                     {
-                        modifierDictionary[modIndex] = paramStrings[2].Value;
+                        modifierDictionary[modIndex] = new [] { DefaultInputValue, group[2].Value };
                     }
-                    string replacement = string.Empty;
                     
-                    if (useModifiers && paramStrings[1].Value == "input")
+                    if (useModifiers && group[1].Value == "input")
                     {
-                        replacement = modifierDictionary[modIndex];
+                        replacement = modifierDictionary[modIndex][0];
                     }
-                    else if (useModifiers && paramStrings[1].Value == "color")
+                    else if (useModifiers && group[1].Value == "color")
                     {
-                        //replacement = ;
+                        replacement = modifierDictionary[modIndex][0];
                     }
                     else
                     {
-                        replacement = " ";
+                        replacement = DefaultInputValue;
                     }
-                    line = Regex.Replace(line, RegexInputDelimiterPattern, replacement);
+
+                    // seems to need instance of Regex to use occurence replacement quantifier...
+                    line = r.Replace(line, replacement, 1);
+                    // search again for ny new match (new input)
+                    match = r.Match(line);
                 }
 
                 if (rawStrings.Count > 1)
@@ -220,7 +303,6 @@ namespace Motus
             }
 
             Console.WriteLine(output.ToString());
-            return modifierDictionary;
         }
     }
 }

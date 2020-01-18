@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Timers;
 
 namespace Motus
@@ -29,10 +27,12 @@ namespace Motus
                 HorizontalLineChar = '─',
                 VerticalLineChar = '│',
                 SplitChar = '\n',
+                // https://regexr.com/4s4lb
                 RegexTextAttributeDelimiterPattern = @"(<.*>)",
                 //RegexScreenParamDelimiterPattern = @"(?:([1-9]+)\*)?(?:([a-z]+)|(?:\[[a-z]+\]))",
                 RegexScreenParamDelimiterPattern = @"([1-9]*)\[([a-z]+)\]",
-                RegexInputDelimiterPattern = @"(?:<(input|color):(.+){1}>)|\\r"
+                RegexInputDelimiterPattern = @"<(?:input|color):[^>]+>",
+                RegexInputParamDelimiterPattern = @"<(input|color):([^>]+)>"
             };
 
             MyRenderer.InitDefault();
@@ -103,9 +103,9 @@ namespace Motus
                 },
                 {
                     "levelinput",
-                    string.Join(MyRenderer.SplitChar, 
+                    string.Join(MyRenderer.SplitChar,
                         "┌───┐",
-                        "---> │ <input:[1-5]+|\\r> │ <---",
+                        "---> │ <input:[1-5]{1}> │ <---",
                         "└───┘"
                     )
                 },
@@ -118,7 +118,7 @@ namespace Motus
                 },
                 {
                     "gameplayrow",
-                    $"│"
+                    $"│<color:blue>"
                 }
             };
 
@@ -225,29 +225,12 @@ namespace Motus
             SetTimer();
         }
 
-        public static int CheckIntInput(string err) 
-        {
-            int bfr = 0;
-
-            try
-            {
-                // if ReadLine() return type is null, sends back "&" to trigger FormatException
-                bfr = int.Parse(Console.ReadLine()??"&");
-            }
-            catch (FormatException)
-            {
-                Console.Write(err);
-            }
-
-            return bfr;
-        }
-
         public void Start()
         {
-            IDictionary<int, string> myScreenParams;
+            IDictionary<int, string[]> myScreenParams;
 
             myScreenParams = MyRenderer.RenderScreen("WelcomeScreen");
-            int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()]);
+            int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
             SetGameParameters(difficultyLevel);
 
             _isLive = true;
@@ -282,14 +265,7 @@ namespace Motus
             Console.WriteLine("C'est fini ! Vous {0}avez {1} réussi à deviner " +
             "le mot mystère qui était \"{2}\" !", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word);
         }
-
-        private void IntroduceGamePlay()
-        {
-            Console.WriteLine("Bienvenue sur Motus ! " + 
-            "Votre but est de deviner le mot suivant " +
-            "en moins de {0} essais ", this._game.TriesNb);
-        }
-
+        
         private void DisplayFeedback()
         {
             //string 
