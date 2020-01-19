@@ -45,8 +45,7 @@ namespace Motus
         public string HorizontalBar;
         public string DefaultInputValue;
 
-        public Dictionary<string, ConsoleColor> ConsoleBackgroundColors;
-        public Dictionary<string, ConsoleColor> ConsoleTextColors;
+        public Dictionary<string, ConsoleColor> ConsoleColors;
 
         public void InitDefault()
         {
@@ -54,7 +53,7 @@ namespace Motus
             GameWidth = WindowWidth - GamePadding * 2 - 4;
             PaddingString = new string(' ', GamePadding);
             HorizontalBar = new string(HorizontalLineChar, GameWidth - 2);
-            ConsoleBackgroundColors = new Dictionary<string, ConsoleColor>()
+            ConsoleColors = new Dictionary<string, ConsoleColor>()
             {
                 {"red", ConsoleColor.Red},
                 {"cyan", ConsoleColor.Cyan},
@@ -73,25 +72,6 @@ namespace Motus
                 {"darkyellow", ConsoleColor.DarkYellow},
                 {"darkmagenta", ConsoleColor. DarkMagenta},
             };
-            ConsoleTextColors = new Dictionary<string, ConsoleColor>()
-            {
-                {"red", ConsoleColor.White},
-                {"cyan", ConsoleColor.Black},
-                {"blue", ConsoleColor.White},
-                {"gray", ConsoleColor.Black},
-                {"green", ConsoleColor.Black},
-                {"black", ConsoleColor.White},
-                {"white", ConsoleColor.Black},
-                {"yellow", ConsoleColor.Black},
-                {"magenta", ConsoleColor.White},
-                {"darkred", ConsoleColor.White},
-                {"darkblue", ConsoleColor.White},
-                {"darkcyan", ConsoleColor.White},
-                {"darkgray", ConsoleColor.White},
-                {"darkgreen", ConsoleColor.White},
-                {"darkyellow", ConsoleColor.White},
-                {"darkmagenta", ConsoleColor.White},
-            };
             EmptyLine ??= InnerSetLine("");
             DefaultInputValue ??= " ";
             #endregion
@@ -101,9 +81,7 @@ namespace Motus
 
         public void SetColor(string color)
         {
-
-            Console.BackgroundColor = ConsoleBackgroundColors[color];
-            Console.ForegroundColor = ConsoleTextColors[color];
+            Console.BackgroundColor = ConsoleColors[color];
         }
 
         public string Encapsulate(string line)
@@ -188,17 +166,16 @@ namespace Motus
 
             bool HasSetModifiers()
             {
-                return modifierDictionary.Where(x => x.Value[0] != "<color>")
-                           .Count(x => !x.Value[0].Equals(DefaultInputValue)) > 0;
+                return modifierDictionary.Count(x => !x.Value[0].Equals(DefaultInputValue)) > 0;
             }
             int FirstUnsetInput()
             {
-                return modifierDictionary.Where(x => x.Value[0] != "<color>").OrderBy(x => x.Key)
-                    .FirstOrDefault(x => x.Value[0].Equals(DefaultInputValue)).Key;
+                return modifierDictionary.OrderBy(x => x.Key)
+                .FirstOrDefault(x => x.Value[0].Equals(DefaultInputValue)).Key;
             }
             int LastSetInput()
             {
-                return modifierDictionary.OrderBy(x => x.Key).Where(x => x.Value[0] != "<color>")
+                return modifierDictionary.OrderBy(x => x.Key)
                     .LastOrDefault(x => !x.Value[0].Equals(DefaultInputValue)).Key;
             }
             void WipeLastInput()
