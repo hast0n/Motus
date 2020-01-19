@@ -8,7 +8,7 @@ namespace Motus
     {
         public static void Main()
         {
-            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ResetColor();
             var gameInterface = new GameLauncher();
             gameInterface.Start();
         }

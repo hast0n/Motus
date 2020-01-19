@@ -71,12 +71,12 @@ namespace Motus
                     // characters used : │ ─ ├ ┼ ┤ ┌ ┬ ┐ └ ┴ ┘
                     "title",
                     Join(MyRenderer.SplitChar, "" +
-                        " ┌─┐    ┌─┐   ┌────┐   ┌────────┐ ┌─┐   ┌─┐   ┌───────┐ ",
-                        " │ └─┐┌─┘ │ ┌─┘┌──┐└─┐ └──┐  ┌──┘ │ │   │ │  ┌┘┌──────┘ ", 
-                        " │ ┌┐└┘┌┐ │ │  │  │  │    │  │    │ │   │ │  └┐└─────┐  ", 
-                        " │ │└──┘│ │ │  │  │  │    │  │    │ │   │ │   └─────┐└┐ ", 
-                        " │ │    │ │ └─┐└──┘┌─┘    │  │    └┐└───┘┌┘  ┌──────┘┌┘ ",
-                        " └─┘    └─┘   └────┘      └──┘     └─────┘   └───────┘  "
+                        "<color:blue>┌─┐    ┌─┐<color:black> <color:red>  ┌────┐  <color:black> <color:green>┌────────┐<color:black> <color:magenta>┌─┐   ┌─┐<color:black> <color:yellow> ┌───────┐<color:black>",
+                        "<color:blue>│ └─┐┌─┘ │<color:black> <color:red>┌─┘┌──┐└─┐<color:black> <color:green>└──┐  ┌──┘<color:black> <color:magenta>│ │   │ │<color:black> <color:yellow>┌┘┌──────┘<color:black>", 
+                        "<color:blue>│ ┌┐└┘┌┐ │<color:black> <color:red>│  │  │  │<color:black> <color:green>   │  │   <color:black> <color:magenta>│ │   │ │<color:black> <color:yellow>└┐└─────┐ <color:black>", 
+                        "<color:blue>│ │└──┘│ │<color:black> <color:red>│  │  │  │<color:black> <color:green>   │  │   <color:black> <color:magenta>│ │   │ │<color:black> <color:yellow> └─────┐└┐<color:black>", 
+                        "<color:blue>│ │    │ │<color:black> <color:red>└─┐└──┘┌─┘<color:black> <color:green>   │  │   <color:black> <color:magenta>└┐└───┘┌┘<color:black> <color:yellow>┌──────┘┌┘<color:black>",
+                        "<color:blue>└─┘    └─┘<color:black> <color:red>  └────┘  <color:black> <color:green>   └──┘   <color:black> <color:magenta> └─────┘ <color:black> <color:yellow>└───────┘ <color:black>"
                         )
                 },
                 {
@@ -124,6 +124,20 @@ namespace Motus
                         "/!\\ Le mot que vous avez sélectionné n'existe pas ou n'est pas valide /!\\",
                         "Vérifiez que le mot contienne les lettres validés et qu'il soit correctement orthographié !"
                     )
+                },
+                {
+                    "caption",
+                    Join(MyRenderer.SplitChar, ""+
+                        "┌── Légende ───────────────────────────┐",
+                        "│ <color:red> <color:black> -> lettre correcte et bien placée  │",
+                        "│ <color:yellow> <color:black> -> lettre correcte mais mal placée │",
+                        "│ <color:blue> <color:black> -> lettre incorrecte               │",
+                        "└──────────────────────────────────────┘"
+                    )
+                },
+                {
+                    "inputAreaTextIndicator",
+                    "Saisissez ci-dessous :"
                 }
             };
 
@@ -158,7 +172,9 @@ namespace Motus
 
                         "topBar", "2[empty]",
 
-                        "[gameplayHint]", "3[empty]", "[gameplayInput]", "[empty]", "<1>", "[empty]",
+                        "[gameplayHint]", "[empty]", "[caption]", "2[empty]", 
+                        "[inputAreaTextIndicator]", "[empty]", "[gameplayInput]", 
+                        "[empty]", "<1>", "[empty]",
 
                         "[empty]", "botBar",
                     }
@@ -253,7 +269,7 @@ namespace Motus
             }
 
             inputStringBuilder.Append(Join(MyRenderer.SplitChar,
-                $"│ {Concat(Enumerable.Repeat("<input:[A-Za-z]>", _game.LetterNb))} │",
+                $"--> │ {Concat(Enumerable.Repeat("<input:[A-Za-z]>", _game.LetterNb))} │ <--",
                 botBar
             ));
 
@@ -561,8 +577,8 @@ namespace Motus
                     infAvgTimeTotPerso/=(lines.Length-4)*100;
                     idemAvgTimeTotPerso /= (lines.Length - 4) * 100;
                     supAvgTimeTotPerso/=(lines.Length-4)*100;
-                
-                    
+
+
                     #region 
                     /*MyRenderer.VisualResources = new Dictionary<string, string>
                     {
@@ -650,46 +666,46 @@ namespace Motus
                     {
                         {
                         
-        //            //        "StatScreen", new []
-        //            //        {
-        //            //            "tentatives",
+                            "StatScreen", new []
+                            {
+                                "tentatives",
                             
-        //            //            "stattrya",
-        //            //            "angle1","4[bar]", "angle2",
-        //            //            "vbar","[empty]","vbar",
-        //            //            "angle3","3[bar]",  "angle4",
-        //            //            "stattryb",
+                                "stattrya",
+                                "angle1","4[bar]", "angle2",
+                                "vbar","[empty]","vbar",
+                                "angle3","3[bar]",  "angle4",
+                                "stattryb",
 
-        //            //            "empty",
+                                "empty",
 
-        //            //            "tempstent",
-        //            //            "stattmoya",
-        //            //            "angle1","[bar]",  "angle2",
-        //            //            "vbar","[empty]","vbar",
-        //            //            "angle3","7[bar]",  "angle4",
-        //            //            "stattmoyb",
+                                "tempstent",
+                                "stattmoya",
+                                "angle1","[bar]",  "angle2",
+                                "vbar","[empty]","vbar",
+                                "angle3","7[bar]",  "angle4",
+                                "stattmoyb",
 
-        //            //            "empty",
+                                "empty",
 
-        //            //            "tempstot",
-        //            //            "statttota",
-        //            //            "angle1","bar",  "angle2",
-        //            //            "vbar","[empty]","vbar",
-        //            //            "angle3","bar",  "angle4",
-        //            //            "statttotb",
-        //            //        }
-        //            //    }
-        //            //};
+                                "tempstot",
+                                "statttota",
+                                "angle1","bar",  "angle2",
+                                "vbar","[empty]","vbar",
+                                "angle3","bar",  "angle4",
+                                "statttotb",
+                            }
+                        }
+                    };
 
-        //            //IDictionary<int, string[]> myScreenParams;
-        //            //myScreenParams = MyRenderer.RenderScreen("StatScreen");*/
-        //            //#endregion
+                    //IDictionary<int, string[]> myScreenParams;
+                    //myScreenParams = MyRenderer.RenderScreen("StatScreen");*/
+                    #endregion
 
-        //            Console.WriteLine("\tVos Statistiques pour le niveau {0}", level);
-        //            Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", nbTry, int.Parse(tab.Where(c => c != null).ToArray().Last().Split("|")[2]) / 1000);
-        //            //Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/1000 );
+                    Console.WriteLine("\tVos Statistiques pour le niveau {0}", level);
+                    Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", nbTry, int.Parse(tab.Where(c => c != null).ToArray().Last().Split("|")[2]) / 1000);
+                    //Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/1000 );
 
-        //            Console.WriteLine("Nombres de tentatives");
+                    Console.WriteLine("Nombres de tentatives");
 
                     Console.BackgroundColor = ConsoleColor.Cyan;
                     for (int i = 0; i < infAvgTryPerso+1; i+=2)
