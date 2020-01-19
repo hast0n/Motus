@@ -20,6 +20,7 @@ namespace Motus
         private Timer _timer;
         private double _lastGuessTime;
         private bool _isLive;
+        private int _infoIndex;
 
         private int NbTried => this._game.History.Where(c => c != null).ToArray().Length - 1;
 
@@ -38,11 +39,14 @@ namespace Motus
                 //RegexScreenParamDelimiterPattern = @"(?:([1-9]+)\*)?(?:([a-z]+)|(?:\[[a-z]+\]))",
                 RegexScreenParamDelimiterPattern = @"([1-9]*)\[([A-za-z]+)\]",
                 RegexInputDelimiterPattern = @"<(?:input|color):[^>]+>",
-                RegexInputParamDelimiterPattern = @"<(input|color):([^>]+)>"
+                RegexInputParamDelimiterPattern = @"<(input|color):([^>]+)>",
+                DefaultInputValue = "."
             };
 
             MyRenderer.InitDefault();
             SetRendererResources();
+
+            _infoIndex = MyRenderer.ScreenResources["GameplayScreen"].IndexOf("<1>");
         }
 
         private void SetRendererResources()
@@ -212,7 +216,8 @@ namespace Motus
 
         private void OnTimeElapsed(object sender, ElapsedEventArgs e)
         {
-            Console.WriteLine("{0} Le temps est écoulé ! {0}", new string('-', 5));
+            _isLive = false;
+            MyRenderer.canInput = false;
             EndGame();
         }
 
@@ -244,7 +249,7 @@ namespace Motus
             SetTimer();
         }
 
-        private void BuildWordInputString()
+        private void BuildUserFeedbackString(bool buildWithInput = true)
         {
             string topBar = $"┌─{new string('─', _game.LetterNb)}─┐{MyRenderer.SplitChar}";
             string botBar = $"└─{new string('─', _game.LetterNb)}─┘";
@@ -268,11 +273,14 @@ namespace Motus
                     $"│ {colorDelimiters} │{MyRenderer.SplitChar}"));
             }
 
-            inputStringBuilder.Append(Join(MyRenderer.SplitChar,
-                $"--> │ {Concat(Enumerable.Repeat("<input:[A-Za-z]>", _game.LetterNb))} │ <--",
-                botBar
-            ));
+            if (buildWithInput)
+            {
+                inputStringBuilder.Append(
+                    $"--> │ {Concat(Enumerable.Repeat("<input:[A-Za-z]>", _game.LetterNb))} │ <--\n"
+                );
+            }
 
+            inputStringBuilder.Append(botBar);
             MyRenderer.VisualResources["gameplayInput"] = inputStringBuilder.ToString();
         }
 
@@ -284,35 +292,38 @@ namespace Motus
             int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
             SetGameParameters(difficultyLevel);
             
-            int errorIndex = MyRenderer.ScreenResources["GameplayScreen"].IndexOf("<1>");
             _isLive = true;
             _lastGuessTime = this._watch.ElapsedMilliseconds;
 
 
             while (this._game.TriesNb - this.NbTried > 0 && this._isLive) // prevent cycling after a correct answer
             {
-                BuildWordInputString();
+                BuildUserFeedbackString();
                 myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
+                if (!_isLive) { break; }
                 string userInput = Concat(myScreenParams.Values.Select(x => x[0]));
 
                 // prevent keeping cycling after timeout
                 while (!this._game.Dictionary.Contains(userInput.ToLower()) && this._isLive)
                 {
                     // TODO : ne pas changer directement le GameplayScreen - utiliser asset
-                    MyRenderer.ScreenResources["GameplayScreen"][errorIndex] = "[badWordError]";
+                    MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[badWordError]";
                     myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
+                    if (!_isLive) { break; }
                     userInput = Concat(myScreenParams.Values.Select(x => x[0]));
                 }
 
-                MyRenderer.ScreenResources["GameplayScreen"][errorIndex] = "[empty]";
+                // get out of gameplay if timed out and prevent further execution
+                if (!_isLive) { break; } 
 
-                //if (!this._isLive) { break; } // get out of gameplay if timed out
+                MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[empty]";
 
                 double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
                 this._game.CheckPosition(userInput.ToUpper(), (int)time);
                 this._lastGuessTime = time;
 
-                //MyRenderer.RenderScreen(MyRenderer.InGameScreen);
+                // !_isLive to handle time out if it occurs between the 2 break statements (will most likely never happen)
+                if (!_isLive || _game.IsWon) { break; }
             }
 
             this.EndGame();
@@ -322,11 +333,15 @@ namespace Motus
         {
             _timer.Enabled = false;
             bool gw = this._game.IsWon;
-            Console.WriteLine("C'est fini ! Vous {0}avez {1} réussi à deviner " +
-            "le mot mystère qui était \"{2}\" !", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word);
-
-            SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
-            Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
+            string gameDuration = $"{_watch.Elapsed.Minutes}:{_watch.Elapsed.Seconds}'";
+            MyRenderer.VisualResources["ending"] = Format("C'est fini ! Vous {0}avez {1} réussi à deviner " +
+            "le mot mystère qui était \"{2}\" !{3}", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word,
+                (gw) ? $"\nTemps total : {gameDuration}" : "");
+            BuildUserFeedbackString(false);
+            MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[ending]";
+            MyRenderer.RenderScreen("GameplayScreen");
+            //SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
+            //Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
         }
         
         private void DisplayFeedback()

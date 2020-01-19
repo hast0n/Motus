@@ -44,6 +44,7 @@ namespace Motus
         public string RegexInputParamDelimiterPattern;
         public string HorizontalBar;
         public string DefaultInputValue;
+        public bool canInput;
 
         public Dictionary<string, ConsoleColor> ConsoleBackgroundColors;
         public Dictionary<string, ConsoleColor> ConsoleTextColors;
@@ -94,6 +95,7 @@ namespace Motus
             };
             EmptyLine ??= InnerSetLine("");
             DefaultInputValue ??= " ";
+            canInput = true;
             #endregion
 
             Console.SetWindowSize(WindowWidth, WindowHeight);
@@ -101,7 +103,6 @@ namespace Motus
 
         public void SetColor(string color)
         {
-
             Console.BackgroundColor = ConsoleBackgroundColors[color];
             Console.ForegroundColor = ConsoleTextColors[color];
         }
@@ -214,41 +215,50 @@ namespace Motus
             StringBuilder screenString = ScreenReader(screen, ref modifierDictionary);
             FormatScreen(screenString, modifierDictionary);
 
-            while (modifierDictionary.Keys.Count > 0)
+            int modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput();
+
+            if (modIndex == 0)
             {
-                int modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
-                string currentRegexPattern = modifierDictionary[modIndex][1];
-
-                string input = $"{Console.ReadKey().KeyChar}";
-
-                while (!Regex.IsMatch(input, currentRegexPattern))
-                {
-                    Console.Write("\b");
-
-                    if (input.Equals("\b") && HasSetModifiers())
-                    {
-                        WipeLastInput();
-                        break;
-                    }
-                    
-                    if (input.Equals("\r") && FirstUnsetInput() == 0)
-                    {
-                        foreach (var item in modifierDictionary.Where(kvp => kvp.Value[0].Equals("<color>")).ToList())
-                        {
-                            modifierDictionary.Remove(item.Key);
-                        }
-                        return modifierDictionary;
-                    }
-                    
-                    input = $"{Console.ReadKey().KeyChar}";
-                }
-
-                if (!input.Equals("\b"))
-                {
-                    modifierDictionary[modIndex][0] = input;
-                }
-                
                 FormatScreen(screenString, modifierDictionary);
+            }
+            else
+            {
+                while (modifierDictionary.Count > 0)
+                {
+                    modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
+
+                    string currentRegexPattern = modifierDictionary[modIndex][1];
+                    string input = $"{Console.ReadKey().KeyChar}";
+
+                    while (!Regex.IsMatch(input, currentRegexPattern))
+                    {
+                        Console.Write("\b");
+
+                        if (input.Equals("\b") && HasSetModifiers())
+                        {
+                            WipeLastInput();
+                            break;
+                        }
+                        
+                        if (input.Equals("\r") && FirstUnsetInput() == 0)
+                        {
+                            foreach (var item in modifierDictionary.Where(kvp => kvp.Value[0].Equals("<color>")).ToList())
+                            {
+                                modifierDictionary.Remove(item.Key);
+                            }
+                            return modifierDictionary;
+                        }
+                        
+                        input = $"{Console.ReadKey().KeyChar}";
+                    }
+
+                    if (!input.Equals("\b"))
+                    {
+                        modifierDictionary[modIndex][0] = input;
+                    }
+                    
+                    FormatScreen(screenString, modifierDictionary);
+                }
             }
 
             return modifierDictionary;
@@ -330,6 +340,7 @@ namespace Motus
             {
                 if (kvp.Value[0].Equals("<color>"))
                 {
+                    // color context
                     string leftString = screenBuilder.ToString().Substring(renderedPartIndex, kvp.Key - renderedPartIndex);
                     Console.Write(leftString);
                     SetColor(kvp.Value[1]);
