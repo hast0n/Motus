@@ -113,5 +113,65 @@ namespace Motus
 
             return feedback;
         }
+
+        public void SaveData()
+        {
+            string datapath = "../../../Resources/data.txt";
+            if (File.Exists(datapath) == false)//if data.txt does not exist, create data.txt
+            {
+                try
+                {
+                    TextWriter newfile = new StreamWriter(datapath, true);
+                    newfile.WriteLine("Enregistrement(s) de vos statistiques de jeu");
+                    newfile.WriteLine("Niveau, Temps total de résolution, Temps moyen par mot, Nombre de tentative(s)");
+                    newfile.WriteLine();
+                    newfile.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("Une erreur est survenue au cours de l'opération de création du fichier data.txt :");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+
+
+            if (IsWon) //if the game is won, the game data are saved : Difficulty level, overall time, average time by word, number of try
+            {
+                //Average time by word on this game
+                int avgTime = 0;
+                int overallTime = 0;
+                int i = 1;
+                bool noEnd = true;
+                while (i <History.Length & noEnd)
+                {
+                    while (History[i] != null)
+                    {
+                        avgTime += (int.Parse(History[i].Split("|")[2]) - int.Parse(History[i - 1].Split("|")[2]));
+                        overallTime += int.Parse(History[i].Split("|")[2]);
+                        i++;
+                    }
+
+                    if (History[i] == null)
+                    {
+                        noEnd = false;
+                    }
+                }
+                avgTime /= (i - 1);
+                string entry = String.Format("{0},{1},{2},{3}", DifficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (History.Length - 1).ToString());
+
+                try
+                {
+                    using StreamWriter writtingOn = File.AppendText(datapath);
+                    writtingOn.WriteLine(entry);
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("Une erreur est survenue au cours de l'opération de sauvegarde :");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            //Console.ReadLine();
+        }
     }
 }
