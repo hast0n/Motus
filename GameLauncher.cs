@@ -310,7 +310,7 @@ namespace Motus
             "le mot mystère qui était \"{2}\" !", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word);
 
             SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
-            //Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
+            Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
         }
         
         private void DisplayFeedback()
@@ -393,264 +393,262 @@ namespace Motus
             //Console.ReadLine();
         }
 
-        //public void Statistics(bool won, int level, string[] tab)
-        //{
-        //    string datapath = "../../../Resources/data.txt";
+        public void Statistics(bool won, int level, string[] tab)
+        {
+            string datapath = "../../../Resources/data.txt";
 
-        //    int nbTry = tab.Length - 1;
+            int nbTry = tab.Length - 1;
 
-        //    double avgTry = 0;
-        //    double avgTimeTry = 0;
-        //    double avgTimeTot = 0;
+            double avgTry = 0;
+            double avgTimeTry = 0;
+            double avgTimeTot = 0;
 
-        //    try
-        //    {
-        //        string[] lines = File.ReadAllLines(datapath);
+            try
+            {
+                string[] lines = File.ReadAllLines(datapath);
                 
-        //        for (int i=3;i<lines.Length;i++)
-        //        {
-        //            int t = int.Parse(lines[i].Split(",")[0]);
-        //            if (t==level)
-        //            { 
-        //                avgTimeTot+=int.Parse(lines[i].Split(",")[1]);
-        //                avgTimeTry += int.Parse(lines[i].Split(",")[2]);
-        //                avgTry += int.Parse(lines[i].Split(",")[3]);
-        //            }
-        //        }
-        //        avgTimeTot /= (lines.Length - 3);
-        //        avgTimeTry /= (lines.Length - 3);
-        //        avgTry /= (lines.Length - 3);
+                for (int i=3;i<lines.Length;i++)
+                {
+                    int t = int.Parse(lines[i].Split(",")[0]);
+                    if (t==level)
+                    { 
+                        avgTimeTot+=int.Parse(lines[i].Split(",")[1]);
+                        avgTimeTry += int.Parse(lines[i].Split(",")[2]);
+                        avgTry += int.Parse(lines[i].Split(",")[3]);
+                    }
+                }
+                avgTimeTot /= (lines.Length - 3);
+                avgTimeTry /= (lines.Length - 3);
+                avgTry /= (lines.Length - 3);
 
-        //        double infAvgTry = 0;
-        //        double infAvgTimeTry = 0;
-        //        double infAvgTimeTot = 0;
+                double infAvgTry = 0;
+                double infAvgTimeTry = 0;
+                double infAvgTimeTot = 0;
               
-        //        for (int i=3; i<lines.Length;i++)
-        //        {
-        //            if (int.Parse(lines[i].Split(",")[3])<avgTry)
-        //            {
-        //                infAvgTry += 1;
-        //            }
-        //            if (int.Parse(lines[i].Split(",")[1])<avgTimeTot)
-        //            {
-        //                infAvgTimeTot += 1;
-        //            }
-        //            if (int.Parse(lines[i].Split(",")[2])<avgTimeTry)
-        //            {
-        //                infAvgTimeTry += 1;
-        //            }
-        //        }
+                for (int i=3; i<lines.Length;i++)
+                {
+                    if (int.Parse(lines[i].Split(",")[3])<avgTry)
+                    {
+                        infAvgTry += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[1])<avgTimeTot)
+                    {
+                        infAvgTimeTot += 1;
+                    }
+                    if (int.Parse(lines[i].Split(",")[2])<avgTimeTry)
+                    {
+                        infAvgTimeTry += 1;
+                    }
+                }
                 
-        //        double supAvgTry = lines.Length-3-infAvgTry;
-        //        double supAvgTimeTry = lines.Length - 3 -infAvgTimeTry;
-        //        double supAvgTimeTot = lines.Length - 3 -infAvgTimeTot;
+                double supAvgTry = lines.Length-3-infAvgTry;
+                double supAvgTimeTry = lines.Length - 3 -infAvgTimeTry;
+                double supAvgTimeTot = lines.Length - 3 -infAvgTimeTot;
 
-        //        infAvgTry /= (lines.Length - 3) * 100;
-        //        supAvgTry/=(lines.Length-3)*100;
-        //        infAvgTimeTry/=(lines.Length-3)*100;
-        //        supAvgTimeTry/=(lines.Length-3)*100;
-        //        infAvgTimeTot/=(lines.Length-3)*100;
-        //        supAvgTimeTot/=(lines.Length-3)*100;
+                infAvgTry /= (lines.Length - 3) * 100;
+                supAvgTry/=(lines.Length-3)*100;
+                infAvgTimeTry/=(lines.Length-3)*100;
+                supAvgTimeTry/=(lines.Length-3)*100;
+                infAvgTimeTot/=(lines.Length-3)*100;
+                supAvgTimeTot/=(lines.Length-3)*100;
 
-        //        Console.WriteLine("\tLes Statistiques pour le niveau {0}", level);
-        //        Console.WriteLine("Pour le niveau {0} choisi, le temps moyen par tentative était de {1} secondes, le temps moyen par partie était de {2} secondes \n", level, Math.Round((avgTimeTry / 1000), 1).ToString("0.0"), Math.Round((avgTimeTot / 1000), 1).ToString("0.0"));
+                Console.WriteLine("\tLes Statistiques pour le niveau {0}", level);
+                Console.WriteLine("Pour le niveau {0} choisi, le temps moyen par tentative était de {1} secondes, le temps moyen par partie était de {2} secondes \n", level, Math.Round((avgTimeTry / 1000), 1).ToString("0.0"), Math.Round((avgTimeTot / 1000), 1).ToString("0.0"));
 
-        //        Console.WriteLine("Nombres de tentatives");
+                Console.WriteLine("Nombres de tentatives");
 
-        //        Console.BackgroundColor = ConsoleColor.Yellow;
-        //        for (int i = 0; i < infAvgTry+1; i+=2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.Write(" {0} % ont réalisé moins de tentatives que la moyenne\n", Math.Round(infAvgTry, 1).ToString("0.0"));
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                for (int i = 0; i < infAvgTry+1; i+=2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont réalisé moins de tentatives que la moyenne\n", Math.Round(infAvgTry, 1).ToString("0.0"));
 
-        //        Console.BackgroundColor = ConsoleColor.Yellow;
-        //        for (int i = 0; i < supAvgTry+1; i+=2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.WriteLine(" {0} % ont réalisé plus de tentatives que la moyenne\n",Math.Round(supAvgTry, 1).ToString("0.0") );
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                for (int i = 0; i < supAvgTry+1; i+=2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont réalisé plus de tentatives que la moyenne\n",Math.Round(supAvgTry, 1).ToString("0.0") );
 
     
-        //        Console.WriteLine("Temps moyen par tentative ");
+                Console.WriteLine("Temps moyen par tentative ");
 
-        //        Console.BackgroundColor = ConsoleColor.DarkYellow;
-        //        for (int i = 0; i < infAvgTimeTry+1; i += 2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.Write(" {0} % ont un temps par tentative inférieur au temps moyen\n", Math.Round(infAvgTimeTry, 1).ToString("0.0"));
+                Console.BackgroundColor = ConsoleColor.DarkYellow;
+                for (int i = 0; i < infAvgTimeTry+1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps par tentative inférieur au temps moyen\n", Math.Round(infAvgTimeTry, 1).ToString("0.0"));
 
-        //        Console.BackgroundColor = ConsoleColor.DarkYellow;
-        //        for (int i = 0; i < supAvgTimeTry + 1; i += 2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.WriteLine(" {0} % ont un temps par tentative supérieur au temps moyen\n", Math.Round(supAvgTimeTry, 1).ToString("0.0"));
-
-
-        //        Console.WriteLine("Temps total moyen");
-
-        //        Console.BackgroundColor = ConsoleColor.Red;
-        //        for (int i = 0; i < infAvgTimeTot + 1; i += 2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.Write(" {0} % ont un temps de résolution inférieur au temps moyen\n", Math.Round(infAvgTimeTot, 1).ToString("0.0"));
-
-        //        Console.BackgroundColor = ConsoleColor.Red;
-        //        for (int i = 0; i < supAvgTimeTot + 1; i += 2)
-        //        {
-        //            Console.Write(" ");
-        //        }
-        //        Console.ResetColor();
-        //        Console.WriteLine(" {0} % ont un temps de résolution supérieur au temps moyen\n", Math.Round(supAvgTimeTot, 1).ToString("0.0"));
-
-        //        if(won)
-        //        {
-        //            double infAvgTry = 0;
-        //            double infAvgTimeTry = 0;
-        //            double infAvgTimeTot = 0;
-        //            double idemAvgTry = 0;
-        //            double idemAvgTimeTry = 0;
-        //            double idemAvgTimeTot = 0;
+                Console.BackgroundColor = ConsoleColor.DarkYellow;
+                for (int i = 0; i < supAvgTimeTry + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont un temps par tentative supérieur au temps moyen\n", Math.Round(supAvgTimeTry, 1).ToString("0.0"));
 
 
-        //            for (int i=3; i<lines.Length-1;i++)//doesn't count the last game which is the game studied
-        //            {
-        //                if (int.Parse(lines[i].Split(",")[3])<avgTry)
-        //                {
-        //                    infAvgTry += 1;
-        //                }
-        //                if (int.Parse(lines[i].Split(",")[3]) == avgTry)
-        //                {
-        //                    idemAvgTry += 1;
-        //                }
-        //                if (int.Parse(lines[i].Split(",")[1])<avgTimeTot)
-        //                {
-        //                    infAvgTimeTot += 1;
-        //                }
-        //                if (int.Parse(lines[i].Split(",")[1]) == avgTimeTot)
-        //                {
-        //                    idemAvgTimeTot += 1;
-        //                }
-        //                if (int.Parse(lines[i].Split(",")[2])<avgTimeTry)
-        //                {
-        //                    infAvgTimeTry += 1;
-        //                }
-        //                if (int.Parse(lines[i].Split(",")[2]) == avgTimeTry)
-        //                {
-        //                    idemAvgTimeTry += 1;
-        //                }
-        //            }
+                Console.WriteLine("Temps total moyen");
+
+                Console.BackgroundColor = ConsoleColor.Red;
+                for (int i = 0; i < infAvgTimeTot + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.Write(" {0} % ont un temps de résolution inférieur au temps moyen\n", Math.Round(infAvgTimeTot, 1).ToString("0.0"));
+
+                Console.BackgroundColor = ConsoleColor.Red;
+                for (int i = 0; i < supAvgTimeTot + 1; i += 2)
+                {
+                    Console.Write(" ");
+                }
+                Console.ResetColor();
+                Console.WriteLine(" {0} % ont un temps de résolution supérieur au temps moyen\n", Math.Round(supAvgTimeTot, 1).ToString("0.0"));
+                if(won)
+                {
+                    double infAvgTryPerso = 0;
+                    double infAvgTimeTryPerso = 0;
+                    double infAvgTimeTotPerso = 0;
+                    double idemAvgTryPerso = 0;
+                    double idemAvgTimeTryPerso = 0;
+                    double idemAvgTimeTotPerso = 0;
+
+
+                    for (int i=3; i<lines.Length-1;i++)//doesn't count the last game which is the game studied
+                    {
+                        if (int.Parse(lines[i].Split(",")[3])<avgTry)
+                        {
+                            infAvgTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[3]) == avgTry)
+                        {
+                            idemAvgTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[1])<avgTimeTot)
+                        {
+                            infAvgTimeTotPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[1]) == avgTimeTot)
+                        {
+                            idemAvgTimeTotPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[2])<avgTimeTry)
+                        {
+                            infAvgTimeTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[2]) == avgTimeTry)
+                        {
+                            idemAvgTimeTryPerso += 1;
+                        }
+                    }
                 
-        //            double supAvgTry = lines.Length-4-infAvgTry- idemAvgTry;
-        //            double supAvgTimeTry = lines.Length - 4 -infAvgTimeTry - idemAvgTimeTry;
-        //            double supAvgTimeTot = lines.Length - 4 -infAvgTimeTot - idemAvgTimeTot ;              
+                    double supAvgTryPerso = lines.Length-4-infAvgTryPerso- idemAvgTryPerso;
+                    double supAvgTimeTryPerso = lines.Length - 4 -infAvgTimeTryPerso - idemAvgTimeTryPerso;
+                    double supAvgTimeTotPerso = lines.Length - 4 -infAvgTimeTotPerso - idemAvgTimeTotPerso ;              
 
-        //            // a : average try, b: average time per try, c : average overall time 
-        //            double aInf = (infAvgTry / (lines.Length - 4) * 100);
-        //            double aIdem = (idemAvgTry / (lines.Length - 4) * 100);
-        //            double aSup = (supAvgTry/(lines.Length-4)*100);
-        //            double bInf = (infAvgTimeTry/(lines.Length-4)*100);
-        //            double bIdem = (idemAvgTimeTry / (lines.Length - 4) * 100);
-        //            double bSup = (supAvgTimeTry/(lines.Length-4)*100);
-        //            double cInf = (infAvgTimeTot/(lines.Length-4)*100);
-        //            double cIdem = (idemAvgTimeTot / (lines.Length - 4) * 100);
-        //            double cSup = (supAvgTimeTot/(lines.Length-4)*100);
+                    infAvgTryPerso/= (lines.Length - 4) * 100;
+                    idemAvgTryPerso /= (lines.Length - 4) * 100;
+                    supAvgTryPerso/=(lines.Length-4)*100;
+                    infAvgTimeTryPerso/=(lines.Length-4)*100;
+                    idemAvgTimeTryPerso /= (lines.Length - 4) * 100;
+                    supAvgTimeTryPerso/=(lines.Length-4)*100;
+                    infAvgTimeTotPerso/=(lines.Length-4)*100;
+                    idemAvgTimeTotPerso /= (lines.Length - 4) * 100;
+                    supAvgTimeTotPerso/=(lines.Length-4)*100;
                 
                     
-        //            //#region --Ouhlacata--
-        //            ///*MyRenderer.VisualResources = new Dictionary<string, string>
-        //            //{
-        //            //    {
-        //            //    "bar",
-        //            //    "_"
-        //            //    },
-        //            //    {
-        //            //    "vbar",
-        //            //    "|"
-        //            //    },
-        //            //    {
-        //            //    "angle1",
-        //            //    "┌"
-        //            //    },
-        //            //    {
-        //            //    "angle2",
-        //            //    "┐"
-        //            //    },
-        //            //    {
-        //            //    "angle3",
-        //            //    "└"
-        //            //    },
-        //            //    {
-        //            //    "angle4",
-        //            //    "┘"
-        //            //    },
-        //            //    {
-        //            //        "tentatives",
-        //            //        string.Join(MyRenderer.SplitChar,
-        //            //            "Nombres de tentatives")
-        //            //    },
-        //            //    {
-        //            //        "tempstent",
-        //            //        string.Join(MyRenderer.SplitChar,
-        //            //            "Temps moyen par tentative")
-        //            //    },
-        //            //    {
-        //            //        "tempstot",
-        //            //        string.Join(MyRenderer.SplitChar,
-        //            //            "Temps total moyen")
-        //            //    },
-        //            //    {
-        //            //        "empty",
-        //            //        "\n"
-        //            //    },
-        //            //    {
-        //            //        "stattrya",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            infAvgTry/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-        //            //            )
-        //            //    },
-        //            //    {
-        //            //        "stattryb",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            supAvgTry/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-        //            //            )
-        //            //    },
-        //            //    {
-        //            //        "statttota",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            infAvgTimeTot/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-        //            //            )
-        //            //    },
-        //            //    {
-        //            //        "statttotb",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            supAvgTimeTot/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-        //            //            )
-        //            //    },
-        //            //    {
-        //            //        "stattmoya",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            infAvgTimeTry/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-        //            //            )
-        //            //    },
-        //            //    {
-        //            //        "stattmoyb",
-        //            //        string.Join(MyRenderer.SplitChar, ""+
-        //            //            supAvgTimeTry/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-        //            //            )
-        //            //    }
-        //            //};
-        //            //MyRenderer.ScreenResources = new Dictionary<string, string[]>()
-        //            //{
-        //            //    {
+                    #region 
+                    /*MyRenderer.VisualResources = new Dictionary<string, string>
+                    {
+                        {
+                        "bar",
+                        "_"
+                        },
+                        {
+                        "vbar",
+                        "|"
+                        },
+                        {
+                        "angle1",
+                        "┌"
+                        },
+                        {
+                        "angle2",
+                        "┐"
+                        },
+                        {
+                        "angle3",
+                        "└"
+                        },
+                        {
+                        "angle4",
+                        "┘"
+                        },
+                        {
+                            "tentatives",
+                            string.Join(MyRenderer.SplitChar,
+                                "Nombres de tentatives")
+                        },
+                        {
+                            "tempstent",
+                            string.Join(MyRenderer.SplitChar,
+                                "Temps moyen par tentative")
+                        },
+                        {
+                            "tempstot",
+                            string.Join(MyRenderer.SplitChar,
+                                "Temps total moyen")
+                        },
+                        {
+                            "empty",
+                            "\n"
+                        },
+                        {
+                            "stattrya",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                infAvgTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                                )
+                        },
+                        {
+                            "stattryb",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                supAvgTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                                )
+                        },
+                        {
+                            "statttota",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                infAvgTimeTotPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                                )
+                        },
+                        {
+                            "statttotb",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                supAvgTimeTotPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                                )
+                        },
+                        {
+                            "stattmoya",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                infAvgTimeTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
+                                )
+                        },
+                        {
+                            "stattmoyb",
+                            string.Join(MyRenderer.SplitChar, ""+
+                                supAvgTimeTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
+                                )
+                        }
+                    };
+                    MyRenderer.ScreenResources = new Dictionary<string, string[]>()
+                    {
+                        {
                         
         //            //        "StatScreen", new []
         //            //        {
@@ -693,91 +691,92 @@ namespace Motus
 
         //            Console.WriteLine("Nombres de tentatives");
 
-        //            Console.BackgroundColor = ConsoleColor.Cyan;
-        //            for (int i = 0; i < aInf+1; i+=2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont réalisé moins de tentatives que vous\n", aInf);
+                    Console.BackgroundColor = ConsoleColor.Cyan;
+                    for (int i = 0; i < infAvgTryPerso+1; i+=2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont réalisé moins de tentatives que vous\n", infAvgTryPerso);
 
-        //            Console.BackgroundColor = ConsoleColor.Cyan;
-        //            for (int i = 0; i < aIdem + 1; i+=2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont réalisé autant de tentatives que vous\n", aIdem);
+                    Console.BackgroundColor = ConsoleColor.Cyan;
+                    for (int i = 0; i < idemAvgTryPerso + 1; i+=2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont réalisé autant de tentatives que vous\n", idemAvgTryPerso);
 
-        //            Console.BackgroundColor = ConsoleColor.Cyan;
-        //            for (int i = 0; i < aSup+1; i+=2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.WriteLine(" {0} % ont réalisé plus de tentatives que vous\n", aSup);
+                    Console.BackgroundColor = ConsoleColor.Cyan;
+                    for (int i = 0; i < supAvgTryPerso+1; i+=2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.WriteLine(" {0} % ont réalisé plus de tentatives que vous\n", supAvgTryPerso);
 
     
         //            Console.WriteLine("Temps moyen par tentative ");
 
-        //            Console.BackgroundColor = ConsoleColor.DarkCyan;
-        //            for (int i = 0; i < bInf + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont un temps par tentative inférieur au votre\n", Math.Round(bInf, 1).ToString("0.0"));
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    for (int i = 0; i < infAvgTimeTryPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont un temps par tentative inférieur au votre\n", Math.Round(infAvgTimeTryPerso, 1).ToString("0.0"));
 
-        //            Console.BackgroundColor = ConsoleColor.DarkCyan;
-        //            for (int i = 0; i < bIdem + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont un temps par tentative identique au votre\n", Math.Round(bIdem, 1).ToString("0.0"));
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    for (int i = 0; i < idemAvgTimeTryPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont un temps par tentative identique au votre\n", Math.Round(idemAvgTimeTryPerso, 1).ToString("0.0"));
 
-        //            Console.BackgroundColor = ConsoleColor.DarkCyan;
-        //            for (int i = 0; i < bSup + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.WriteLine(" {0} % ont un temps par tentative supérieur au votre\n", Math.Round(bSup, 1).ToString("0.0"));
+                    Console.BackgroundColor = ConsoleColor.DarkCyan;
+                    for (int i = 0; i < supAvgTimeTryPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.WriteLine(" {0} % ont un temps par tentative supérieur au votre\n", Math.Round(supAvgTimeTryPerso, 1).ToString("0.0"));
 
 
         //            Console.WriteLine("Temps total moyen");
 
-        //            Console.BackgroundColor = ConsoleColor.Green;
-        //            for (int i = 0; i < cInf + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont un temps de résolution inférieur au votre\n", Math.Round(cInf, 1).ToString("0.0"));
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    for (int i = 0; i < infAvgTimeTotPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont un temps de résolution inférieur au votre\n", Math.Round(infAvgTimeTotPerso, 1).ToString("0.0"));
 
-        //            Console.BackgroundColor = ConsoleColor.Green;
-        //            for (int i = 0; i < cIdem + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.Write(" {0} % ont un temps de résolution identique au votre\n", Math.Round(cIdem, 1).ToString("0.0"));
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    for (int i = 0; i < idemAvgTimeTotPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.Write(" {0} % ont un temps de résolution identique au votre\n", Math.Round(idemAvgTimeTotPerso, 1).ToString("0.0"));
 
-        //            Console.BackgroundColor = ConsoleColor.Green;
-        //            for (int i = 0; i < cSup + 1; i += 2)
-        //            {
-        //                Console.Write(" ");
-        //            }
-        //            Console.ResetColor();
-        //            Console.WriteLine(" {0} % ont un temps de résolution supérieur au votre\n", Math.Round(cSup, 1).ToString("0.0"));
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Write("Une erreur est survenue au cours de l'opération :");
-        //        Console.WriteLine(ex.Message);
-        //    }
-        //    //Console.ReadLine();
-        //}
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    for (int i = 0; i < supAvgTimeTotPerso + 1; i += 2)
+                    {
+                        Console.Write(" ");
+                    }
+                    Console.ResetColor();
+                    Console.WriteLine(" {0} % ont un temps de résolution supérieur au votre\n", Math.Round(supAvgTimeTotPerso, 1).ToString("0.0"));
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Console.Write("Une erreur est survenue au cours de l'opération :");
+                Console.WriteLine(ex.Message);
+            }
+            //Console.ReadLine();
+        }
     }
 }
