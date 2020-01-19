@@ -1,39 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.String;
 
 namespace Motus
 {
     static class RendererHelper
     {
-        public static string Encapsulate(this string line, int width, char symb)
-        {
-            string trimmedLine = line.Trim();
-            int padding;
-
-            if (trimmedLine.Length > width)
-            {
-                int excess = trimmedLine.Length - width - 2; // -2 corresponds to the 2 border symbols
-                trimmedLine = trimmedLine.Substring(excess / 2, width - 2);
-                padding = 0;
-            }
-            else
-            {
-                padding = (width - trimmedLine.Length) / 2 - 1;
-            }
-
-            bool colParity = trimmedLine.IsOddLength() != width.IsOdd();
-
-            string paddingString = new string(' ', padding);
-
-            string debug = string.Format("{2}{1}{0}{1}{3}{2}\n", 
-                trimmedLine, paddingString, symb, (colParity) ? " " : "");
-            return debug;
-        }
-
         public static string Pad(this string line, int padding)
         {
             return $"{new string(' ', padding)}{line}";
@@ -53,7 +28,7 @@ namespace Motus
     class Renderer
     {
         public IDictionary<string, string> VisualResources;
-        public IDictionary<string, string[]> ScreenResources;
+        public IDictionary<string, List<string>> ScreenResources;
         public int WindowWidth;
         public int WindowHeight;
         public int GamePadding;
@@ -109,9 +84,51 @@ namespace Motus
             Console.BackgroundColor = ConsoleColors[color];
         }
 
+        public string Encapsulate(string line)
+        {
+            Regex r = new Regex(RegexInputParamDelimiterPattern);
+            string trimmedLine = line.Trim();
+            string pseudoLine = trimmedLine;
+            var match = r.Match(pseudoLine);
+            
+            while (match.Success)
+            {
+                string replacement = match.Groups[1].Value.Equals("input") ? " " : Empty;
+                pseudoLine = r.Replace(pseudoLine, replacement, 1);
+                match = r.Match(pseudoLine);
+            }
+
+            int lineLength = pseudoLine.Length;
+            int width = GameWidth;
+            char symb = VerticalLineChar;
+            int padding;
+
+            // should throw error if line is too long
+            // the following behaviour is very foolish and not safe
+            if (lineLength > width)
+            {
+                int excess = lineLength - width - 2; // -2 corresponds to the 2 border symbols
+                trimmedLine = trimmedLine.Substring(excess / 2, width - 2);
+                padding = 0;
+            }
+            else
+            {
+                padding = (width - lineLength) / 2 - 1;
+            }
+
+            bool colParity = lineLength.IsOdd() != width.IsOdd();
+
+            string paddingString = new string(' ', padding);
+
+            string debug = Format("{2}{1}{0}{1}{3}{2}\n",
+                trimmedLine, paddingString, symb, (colParity) ? " " : "");
+            int debug2 = debug.Length;
+            return debug;
+        }
+
         public string InnerSetLine(string line)
         {
-            return line.Encapsulate(GameWidth, VerticalLineChar).Pad(GamePadding);
+            return Encapsulate(line).Pad(GamePadding);
         }
 
         public string SetLine(string linesString)
@@ -119,7 +136,7 @@ namespace Motus
             try
             {
                 string[] linesArray = linesString.Split(SplitChar)
-                    .Where(l => !string.IsNullOrEmpty(l)).ToArray();
+                    .Where(l => !IsNullOrEmpty(l)).ToArray();
 
                 if (linesArray.Length < 1)
                 {
@@ -128,7 +145,7 @@ namespace Motus
 
                 StringBuilder titleString = new StringBuilder();
 
-                foreach (string line in linesArray.Where(l => !string.IsNullOrEmpty(l)))
+                foreach (string line in linesArray.Where(l => !IsNullOrEmpty(l)))
                 {
                     titleString.Append(InnerSetLine(line));
                 }
@@ -146,14 +163,7 @@ namespace Motus
         {
             #region Render Period Initialization
             Dictionary<int, string[]> modifierDictionary = new Dictionary<int, string[]>();
-            string input = string.Empty;
-            string[] strings = new [] {"\b", "\r"};
 
-            /*int LastUnsetInput()
-            {
-                return modifierDictionary.OrderBy(x => x.Key)
-                .LastOrDefault(x => string.IsNullOrEmpty(x.Value[0])).Key;
-            }*/
             bool HasSetModifiers()
             {
                 return modifierDictionary.Count(x => !x.Value[0].Equals(DefaultInputValue)) > 0;
@@ -178,32 +188,15 @@ namespace Motus
             }
             #endregion
 
-            SetFrame(screen, ref modifierDictionary);
+            StringBuilder screenString = ScreenReader(screen, ref modifierDictionary);
+            FormatScreen(screenString, modifierDictionary);
 
-            while (true)
+            while (modifierDictionary.Keys.Count > 0)
             {
-                int modIndex = FirstUnsetInput();
-
-                if (modIndex == 0)
-                {
-                    while (!strings.Contains(input))
-                    {
-                        input = $"{Console.ReadKey().KeyChar}";
-                        Console.Write("\b");
-                    }
-
-                    if (input.Equals("\r"))
-                    {
-                        break;
-                    }
-
-                    WipeLastInput();
-                    SetFrame(screen, ref modifierDictionary);
-                    continue;
-                }
-
+                int modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
                 string currentRegexPattern = modifierDictionary[modIndex][1];
-                input = $"{Console.ReadKey().KeyChar}";
+
+                string input = $"{Console.ReadKey().KeyChar}";
 
                 while (!Regex.IsMatch(input, currentRegexPattern))
                 {
@@ -214,7 +207,12 @@ namespace Motus
                         WipeLastInput();
                         break;
                     }
-
+                    
+                    if (input.Equals("\r") && FirstUnsetInput() == 0)
+                    {
+                        return modifierDictionary;
+                    }
+                    
                     input = $"{Console.ReadKey().KeyChar}";
                 }
 
@@ -223,25 +221,44 @@ namespace Motus
                     modifierDictionary[modIndex][0] = input;
                 }
                 
-                SetFrame(screen, ref modifierDictionary);
+                FormatScreen(screenString, modifierDictionary);
             }
 
             return modifierDictionary;
         }
 
-        private void SetFrame(string screen, ref Dictionary<int, string[]> modifierDictionary)
+        private StringBuilder ScreenReader(string screen, ref Dictionary<int, string[]> modifierDictionary)
         {
-            Console.Clear();
-
             StringBuilder output = new StringBuilder();
-            bool useModifiers = modifierDictionary.Count > 0;
 
             foreach (string lineIdentifier in ScreenResources[screen])
             {
                 var rawStrings = Regex.Match(lineIdentifier, RegexScreenParamDelimiterPattern).Groups;
                 string key = rawStrings.Count > 1 ? rawStrings[2].Value : lineIdentifier;
-                string line = VisualResources[key];
+                string line;
 
+                try { line = VisualResources[key]; }
+                catch (KeyNotFoundException) { line = "\n"; }
+
+                if (rawStrings.Count > 1)
+                {
+                    string modLine = Empty;
+                    string repString = rawStrings[1].Value;
+                    int repN = IsNullOrEmpty(repString)
+                        ? 1 : int.Parse(repString);
+                    
+                    for (int i = 0; i < repN; i++)
+                    {
+                        modLine += SetLine(line);
+                    }
+
+                    line = modLine;
+                }
+                else if (VisualResources.ContainsKey(lineIdentifier))
+                {
+                    output.Append(VisualResources[lineIdentifier]);
+                    continue;
+                }
 
                 Regex r = new Regex(RegexInputDelimiterPattern);
                 var match = r.Match(line);
@@ -251,58 +268,50 @@ namespace Motus
                     var group = Regex.Match(match.Value, RegexInputParamDelimiterPattern).Groups;
                     int modIndex = output.Length + match.Index;
                     string replacement;
-                        
-                    if (!useModifiers)
+
+                    if (group[1].Value.Equals("input"))
                     {
-                        modifierDictionary[modIndex] = new [] { DefaultInputValue, group[2].Value };
-                    }
-                    
-                    if (useModifiers && group[1].Value == "input")
-                    {
-                        replacement = modifierDictionary[modIndex][0];
-                    }
-                    else if (useModifiers && group[1].Value == "color")
-                    {
-                        replacement = modifierDictionary[modIndex][0];
+                        replacement = DefaultInputValue;
+                        modifierDictionary[modIndex] = new[] { replacement, group[2].Value };
                     }
                     else
                     {
-                        replacement = DefaultInputValue;
+                        replacement = Empty;
+                        modifierDictionary[modIndex] = new[] { "<color>", group[2].Value };
                     }
 
                     // seems to need instance of Regex to use occurence replacement quantifier...
                     line = r.Replace(line, replacement, 1);
-                    // search again for ny new match (new input)
+                    // search again for any new match (new input)
                     match = r.Match(line);
                 }
 
-                if (rawStrings.Count > 1)
-                {
-                    string repString = rawStrings[1].Value;
-                    int repN = string.IsNullOrEmpty(repString)
-                        ? 1
-                        : int.Parse(repString);
+                output.Append(line);
 
-                    for (int i = 0; i < repN; i++)
-                    {
-                        output.Append(SetLine(line));
-                    }
-                }
-                else if (VisualResources.ContainsKey(lineIdentifier))
-                {
-                    output.Append(VisualResources[lineIdentifier]);
-                }
             }
 
-            if (useModifiers)
+            return output;
+        }
+
+        private void FormatScreen(StringBuilder screenBuilder, Dictionary<int, string[]> modifierDictionary)
+        {
+
+            Console.Clear();
+
+            foreach (var keyValuePair in modifierDictionary.OrderBy(x => x.Key))
             {
-                
-            }
-            else
-            {
+                if (keyValuePair.Value[0].Equals("<color>"))
+                {
+                    // color context
+                }
+                else
+                {
+                    // input context
+                    screenBuilder[keyValuePair.Key] = char.Parse(keyValuePair.Value[0]);
+                }
             }
 
-            Console.WriteLine(output.ToString());
+            Console.WriteLine(screenBuilder.ToString());
         }
     }
 }

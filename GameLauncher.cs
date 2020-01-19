@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;// indispensable pour lire et ecrire un fichier
 using System.Linq;
+using System.Text;
 using System.Timers;
+using static System.String;
+
 //using System.Xml.Linq;//csv
 
 
@@ -33,7 +36,7 @@ namespace Motus
                 // https://regexr.com/4s4lb
                 RegexTextAttributeDelimiterPattern = @"(<.*>)",
                 //RegexScreenParamDelimiterPattern = @"(?:([1-9]+)\*)?(?:([a-z]+)|(?:\[[a-z]+\]))",
-                RegexScreenParamDelimiterPattern = @"([1-9]*)\[([a-z]+)\]",
+                RegexScreenParamDelimiterPattern = @"([1-9]*)\[([A-za-z]+)\]",
                 RegexInputDelimiterPattern = @"<(?:input|color):[^>]+>",
                 RegexInputParamDelimiterPattern = @"<(input|color):([^>]+)>"
             };
@@ -64,19 +67,19 @@ namespace Motus
                 //    $"┌{new string('─', _game.LetterNb * )}┐\n"
                 //},
                 {
-                    "gameplaybotbar",
+                    "gameplayBotBar",
                     $"{MyRenderer.PaddingString}└{MyRenderer.HorizontalBar}┘\n"
                 },
                 {
                     "intro",
-                    string.Join(MyRenderer.SplitChar, 
+                    Join(MyRenderer.SplitChar, 
                         "Bonjour et bienvenue sur Motus, le jeu dans le quel vous devinez des mots !!", 
                         "Wahoooo c'est trop génial ! Allez, vas-y choisis un niveau :")
                 },
                 {
                     // characters used : │ ─ ├ ┼ ┤ ┌ ┬ ┐ └ ┴ ┘
                     "title",
-                    string.Join(MyRenderer.SplitChar, "" +
+                    Join(MyRenderer.SplitChar, "" +
                         " ┌─┐    ┌─┐   ┌────┐   ┌────────┐ ┌─┐   ┌─┐   ┌───────┐ ",
                         " │ └─┐┌─┘ │ ┌─┘┌──┐└─┐ └──┐  ┌──┘ │ │   │ │  ┌┘┌──────┘ ", 
                         " │ ┌┐└┘┌┐ │ │  │  │  │    │  │    │ │   │ │  └┐└─────┐  ", 
@@ -91,7 +94,7 @@ namespace Motus
                 },
                 {
                     "levels",
-                    string.Join(MyRenderer.SplitChar, "" +
+                    Join(MyRenderer.SplitChar, "" +
                         "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
                         "│ 1 │──│ 4 lettres dont la première donnée, pas de limite de temps, 6 essais │",
                         "└───┘  └─────────────────────────────────────────────────────────────────────┘",
@@ -110,32 +113,35 @@ namespace Motus
                     )
                 },
                 {
-                    "levelinput",
-                    string.Join(MyRenderer.SplitChar,
+                    "levelInput",
+                    Join(MyRenderer.SplitChar,
                         "┌───┐",
                         "---> │ <input:[1-5]{1}> │ <---",
                         "└───┘"
                     )
                 },
                 {
-                    "gameplayhint",
-                    string.Join(MyRenderer.SplitChar, ""+
+                    "gameplayHint",
+                    Join(MyRenderer.SplitChar, ""+
                         "Saisissez les lettres qui composent selon vous le mot mystère !",
                         "Saisissez-les unes par unes et appuyez sur [Entrée] quand vous avez terminé :"
                         )
                 },
                 {
-                    "gameplayrow",
-                    $"│<color:blue>"
+                    "badWordError",
+                    Join(MyRenderer.SplitChar, ""+
+                        "/!\\ Le mot que vous avez sélectionné n'existe pas ou n'est pas valide /!\\",
+                        "Vérifiez que le mot contienne les lettres validés et qu'il soit correctement orthographié !"
+                    )
                 }
             };
 
             // [(.*)] : group that needs encapsulation
             // ([1-9]*)\[([a-z]+)\] : group that needs encapsulation and can be repeated
-            MyRenderer.ScreenResources = new Dictionary<string, string[]>()
+            MyRenderer.ScreenResources = new Dictionary<string, List<string>>()
             {
                 {
-                    "WelcomeScreen", new []
+                    "WelcomeScreen", new List<string>
                     {
                         "empty",
 
@@ -145,13 +151,13 @@ namespace Motus
 
                         "topBar", "2[empty]",
 
-                        "[intro]", "3[empty]", "[levels]", "[empty]", "[levelinput]",
+                        "[intro]", "3[empty]", "[levels]", "[empty]", "[levelInput]",
 
                         "[empty]", "botBar",
                     }
                 },
                 {
-                    "GameplayScreen", new []
+                    "GameplayScreen", new List<string>
                     {
                         "empty",
 
@@ -161,7 +167,7 @@ namespace Motus
 
                         "topBar", "2[empty]",
 
-                        "[gameplayhint]", "3[empty]", "[levels]", "[empty]", "[levelinput]",
+                        "[gameplayHint]", "3[empty]", "[gameplayInput]", "[empty]", "<1>", "[empty]",
 
                         "[empty]", "botBar",
                     }
@@ -233,6 +239,39 @@ namespace Motus
             SetTimer();
         }
 
+        private void BuildWordInputString()
+        {
+            string topBar = $"┌─{new string('─', _game.LetterNb)}─┐{MyRenderer.SplitChar}";
+            string botBar = $"└─{new string('─', _game.LetterNb)}─┘";
+            StringBuilder inputStringBuilder = new StringBuilder(topBar);
+            string[] colors = new [] {"red", "yellow", "blue"};
+
+            foreach (var userTry in _game.History.Where(x => !IsNullOrEmpty(x)))
+            {
+                string colorDelimiters = string.Empty;
+                string[] userTryStrings = userTry.Split('|');
+
+                for (int i = 0; i < _game.LetterNb; i++)
+                {
+                    string color = colors[(int)char.GetNumericValue(userTryStrings[1][i])];
+                    char letter = userTryStrings[0][i];
+                    colorDelimiters += $"<color:{color}>{letter}";
+                }
+
+                colorDelimiters += "<color:black>";
+
+                inputStringBuilder.Append(Join(MyRenderer.SplitChar,
+                    $"│ {colorDelimiters} │{MyRenderer.SplitChar}"));
+            }
+
+            inputStringBuilder.Append(Join(MyRenderer.SplitChar,
+                $"│ {Concat(Enumerable.Repeat("<input:[A-Za-z]>", _game.LetterNb))} │",
+                botBar
+            ));
+
+            MyRenderer.VisualResources["gameplayInput"] = inputStringBuilder.ToString();
+        }
+
         public void Start()
         {
             IDictionary<int, string[]> myScreenParams;
@@ -240,26 +279,33 @@ namespace Motus
             myScreenParams = MyRenderer.RenderScreen("WelcomeScreen");
             int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
             SetGameParameters(difficultyLevel);
-
+            
             _isLive = true;
             _lastGuessTime = this._watch.ElapsedMilliseconds;
 
+
             while (this._game.TriesNb - this.NbTried > 0 && this._isLive) // prevent cycling after a correct answer
             {
-
+                BuildWordInputString();
                 myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
-                //while (!this._game.Dictionary.Contains(input?.ToLower()) && !this._isLive) // prevent keeping cycling after timeout
-                //{
-                //    Console.Write("Le mot sélectionné n'est pas valide, réessayez :\n");
-                //    input = Console.ReadLine();
-                //}
+                string userInput = Concat(myScreenParams.Values.Select(x => x[0]));
 
-                //if (!this._isLive) { break; } // get out of gameplay if
+                // prevent keeping cycling after timeout
+                while (!this._game.Dictionary.Contains(userInput.ToLower()) && this._isLive)
+                {
+                    // TODO : ne pas changer directement le GameplayScreen utiliser asset
+                    int errorIndex = MyRenderer.ScreenResources["GameplayScreen"].IndexOf("<1>");
+                    MyRenderer.ScreenResources["GameplayScreen"][errorIndex] = "[badWordError]";
+                    myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
+                    userInput = Concat(myScreenParams.Values.Select(x => x[0]));
+                }
 
-                //double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
-                //this._game.CheckPosition(input?.ToUpper(), (int) time);
-                //this._lastGuessTime = time;
-                
+                //if (!this._isLive) { break; } // get out of gameplay if timed out
+
+                double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
+                this._game.CheckPosition(userInput.ToUpper(), (int)time);
+                this._lastGuessTime = time;
+
                 //MyRenderer.RenderScreen(MyRenderer.InGameScreen);
             }
 
@@ -288,7 +334,7 @@ namespace Motus
 
             foreach (string t in hist)
             {
-                if (string.IsNullOrEmpty(t)) { continue;}
+                if (IsNullOrEmpty(t)) { continue;}
 
                 string[] values = t.Split('|');
                 string input = values[0];
