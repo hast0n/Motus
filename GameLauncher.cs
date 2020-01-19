@@ -340,6 +340,8 @@ namespace Motus
             BuildUserFeedbackString(false);
             MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[ending]";
             MyRenderer.RenderScreen("GameplayScreen");
+
+            SaveData();
             //SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
             //Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
         }
@@ -376,7 +378,7 @@ namespace Motus
             }
         }
         
-        private void SaveData(bool won, string[] histo, int niv, int nbtenta)
+        private void SaveData()
         {
             string datapath = "../../../Resources/data.txt";
             if (File.Exists(datapath)==false)//if data.txt does not exist, create data.txt
@@ -395,20 +397,32 @@ namespace Motus
                     Console.WriteLine(ex.Message);
                 }
             }
+
             
 
-            if (won) //if the game is won, the game data are saved : Difficulty level, overall time, average time by word, number of try
-            {
-                // j'ai un doute sur l'enregistrement du temps dans history à quoi il correspnd
-                
+            if (this._game.IsWon) //if the game is won, the game data are saved : Difficulty level, overall time, average time by word, number of try
+            {                 
                 //Average time by word on this game
                 int avgTime = 0;
-                for (int i = 1; i < histo.Length; i++)
+                int overallTime=0;
+                int i = 1;
+                bool noEnd = true;
+                while ( i < this._game.History.Length & noEnd)
                 {
-                    avgTime += (int.Parse(histo[i].Split("|")[2]) - int.Parse(histo[i - 1].Split("|")[2]));
+                    while (this._game.History[i] !=null) 
+                    {
+                        avgTime += (int.Parse(this._game.History[i].Split("|")[2]) - int.Parse(this._game.History[i - 1].Split("|")[2]));
+                        overallTime +=int.Parse(this._game.History[i].Split("|")[2]);
+                        i++;
+                    }
+
+                    if (this._game.History[i] == null)
+                    {
+                        noEnd = false;
+                    }
                 }
-                avgTime /= (histo.Length - 1);
-                string entry = String.Format("{0},{1},{2},{3}", niv.ToString(), histo.Where(c => c != null).ToArray().Last().Split("|")[2], avgTime.ToString(), nbtenta.ToString() );
+                avgTime /= (i - 1);
+                string entry = String.Format("{0},{1},{2},{3}", this._game.DifficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (this._game.History.Length-1).ToString() );
 
                 try
                 {
