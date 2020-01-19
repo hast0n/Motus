@@ -210,6 +210,10 @@ namespace Motus
                     
                     if (input.Equals("\r") && FirstUnsetInput() == 0)
                     {
+                        foreach (var item in modifierDictionary.Where(kvp => kvp.Value[0].Equals("<color>")).ToList())
+                        {
+                            modifierDictionary.Remove(item.Key);
+                        }
                         return modifierDictionary;
                     }
                     
@@ -238,7 +242,7 @@ namespace Motus
                 string line;
 
                 try { line = VisualResources[key]; }
-                catch (KeyNotFoundException) { line = "\n"; }
+                catch (KeyNotFoundException) { line = string.Empty; }
 
                 if (rawStrings.Count > 1)
                 {
@@ -297,21 +301,24 @@ namespace Motus
         {
 
             Console.Clear();
+            int renderedPartIndex = 0;
 
-            foreach (var keyValuePair in modifierDictionary.OrderBy(x => x.Key))
+            foreach (var kvp in modifierDictionary.OrderBy(x => x.Key))
             {
-                if (keyValuePair.Value[0].Equals("<color>"))
+                if (kvp.Value[0].Equals("<color>"))
                 {
-                    // color context
+                    string leftString = screenBuilder.ToString().Substring(renderedPartIndex, kvp.Key - renderedPartIndex);
+                    Console.Write(leftString);
+                    SetColor(kvp.Value[1]);
+                    renderedPartIndex = kvp.Key;
                 }
                 else
                 {
                     // input context
-                    screenBuilder[keyValuePair.Key] = char.Parse(keyValuePair.Value[0]);
+                    screenBuilder[kvp.Key] = char.Parse(kvp.Value[0]);
                 }
             }
-
-            Console.WriteLine(screenBuilder.ToString());
+            Console.WriteLine(screenBuilder.ToString().Substring(renderedPartIndex, screenBuilder.Length - renderedPartIndex));
         }
     }
 }
