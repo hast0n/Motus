@@ -43,7 +43,7 @@ namespace Motus
         public string RegexInputParamDelimiterPattern;
         public string HorizontalBar;
         public string DefaultInputValue;
-        public bool canInput;
+        public bool CanInput;
 
         public Dictionary<string, ConsoleColor> ConsoleBackgroundColors;
         public Dictionary<string, ConsoleColor> ConsoleTextColors;
@@ -94,7 +94,7 @@ namespace Motus
             };
             EmptyLine ??= InnerSetLine("");
             DefaultInputValue ??= " ";
-            canInput = true;
+            CanInput = true;
             #endregion
 
             Console.SetWindowSize(WindowWidth, WindowHeight);
@@ -223,14 +223,14 @@ namespace Motus
             }
             else
             {
-                while (modifierDictionary.Count > 0 && canInput)
+                while (modifierDictionary.Count > 0 && CanInput)
                 {
                     modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
 
                     string currentRegexPattern = modifierDictionary[modIndex][1];
                     string input = $"{Console.ReadKey().KeyChar}";
 
-                    while (!Regex.IsMatch(input, currentRegexPattern) && canInput)
+                    while (!Regex.IsMatch(input, currentRegexPattern) && CanInput)
                     {
                         Console.Write("\b");
 
@@ -252,7 +252,7 @@ namespace Motus
                         input = $"{Console.ReadKey().KeyChar}";
                     }
 
-                    if (!input.Equals("\b") && canInput)
+                    if (!input.Equals("\b") && CanInput)
                     {
                         modifierDictionary[modIndex][0] = input;
                     }

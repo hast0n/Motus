@@ -24,7 +24,7 @@ namespace Motus
             this.LetterNb = letterNb;
             this.TriesNb = triesNb;
 
-            // draw a word in the dictionnary according to letterNb
+            // Intilialize word
             this.Word = this.SelectWord(letterNb).ToUpper();
             string tmp;
 
@@ -43,15 +43,17 @@ namespace Motus
             
             this.History = new string[triesNb + 1];
 
-            // Initialize 
-            this.CheckPosition(tmp, DateTime.Now.Millisecond);
+            // Initialize game history
+            this.CheckPosition(tmp, 0);
         }
 
         private string SelectWord(int letterNb)
         {
+            // Fetch dictionnary data
             string filepath = "../../../Resources/dico_{0}.txt";
             var file = new StreamReader(string.Format(filepath, letterNb)).ReadToEnd();
             Dictionary = file.Split("\r\n");
+            // Draw random word
             int index = new Random().Next(0, Dictionary.Length - 1);
 
             return Dictionary[index];
@@ -66,33 +68,16 @@ namespace Motus
              */
 
             string feedback = string.Empty;
-            //int time = Timer.;
             
+            // Check letter validity foreach letter in user input
             for (int i = 0; i < this.Word.Length; i++)
             {
-                // concatenate a string with an expression evaluated with
-                // the conditional operator ?: (ternary conditional operator)
                 feedback += this.Word[i].Equals(input[i]) ? 0 : 
                             this.Word.Contains(input[i]) ? 1 : 2;
 
-                #region -- OR --
-
-                //if (this.word[i].Equals(input[i]))
-                //{
-                //    feedback += 0;
-                //}
-                //else if (this.word.Contains(input[i]))
-                //{
-                //    feedback += 1;
-                //}
-                //else
-                //{
-                //    feedback += 2;
-                //}
-
-                #endregion
             }
 
+            // Get index of last non null history element
             int index = History.Where(s => s != null).ToArray().Length;
 
             #region -- OR --
@@ -110,6 +95,7 @@ namespace Motus
 
             #endregion
 
+            // Setup history element
             History[index] = $"{input}|{feedback}|{time}";
 
             return feedback;
