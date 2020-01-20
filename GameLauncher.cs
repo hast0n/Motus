@@ -376,10 +376,12 @@ namespace Motus
             StringBuilder inputStringBuilder = new StringBuilder(topBar);
             string[] colors = new [] {"red", "yellow", "blue"};
 
+            // For every user input, create a string with modifiers (colors) to feed the Renderer
             foreach (var userTry in _game.History.Where(x => !IsNullOrEmpty(x)))
             {
                 string colorDelimiters = string.Empty;
                 string[] userTryStrings = userTry.Split('|');
+
 
                 for (int i = 0; i < _game.LetterNb; i++)
                 {
@@ -393,6 +395,8 @@ namespace Motus
                     $"│ {colorDelimiters} │{_myRenderer.SplitChar}"));
             }
 
+            // If user input is needed, add the corresponding formatted string to feed the Renderer
+            // The string should contain a number of inputs equal to LetterNb
             if (buildWithInput)
             {
                 inputStringBuilder.Append(

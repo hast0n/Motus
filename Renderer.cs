@@ -7,16 +7,13 @@ using static System.String;
 
 namespace Motus
 {
+
+    // A scimple class used to help the Renderer to frame content
     static class RendererHelper
     {
         public static string Pad(this string line, int padding)
         {
             return $"{new string(' ', padding)}{line}";
-        }
-
-        public static bool IsOddLength(this string value)
-        {
-            return value.Length % 2 != 0;
         }
         
         public static bool IsOdd(this int value)
@@ -27,33 +24,53 @@ namespace Motus
 
     class Renderer
     {
+        // visual elements to be displayed on screen
         public IDictionary<string, string> VisualResources;
+        // console width
         public int WindowWidth;
+        // console height
         public int WindowHeight;
+        // game left padding
         public int GamePadding;
+        // game frame width
         public int GameWidth;
+        // Default char for horizontal lines
         public char HorizontalLineChar;
+        // Default char for vertical lines
         public char VerticalLineChar;
+        // Default char to use to split strings for carriage return
         public char SplitChar;
+        // Default white space line for left padding
         public string PaddingString;
+        // Default empty line
         public string EmptyLine;
+        // Regular Expression to detect if there are modifiers in a visual resource
         public string RegexTextAttributeDelimiterPattern;
+        // RegEx to detect if a visual resource needs to be framed or repeated
         public string RegexScreenParamDelimiterPattern;
+        // RegEx to get modifier index in visual resource
         public string RegexInputDelimiterPattern;
+        // RegEx to extract modifier values in visual resource
         public string RegexInputParamDelimiterPattern;
+        // Default Horizontal bar
         public string HorizontalBar;
+        // Default placeholder for input
         public string DefaultInputValue;
+        // Boolean that asserts if inputs are being allowed or not
         public bool CanInput;
 
+        // Console background colors
         public Dictionary<string, ConsoleColor> ConsoleBackgroundColors;
+        // Console forground colors
         public Dictionary<string, ConsoleColor> ConsoleTextColors;
 
         public void InitDefault()
         {
-            #region InitVarRegion
+            // Set default values according to instance parameters
             GameWidth = WindowWidth - GamePadding * 2 - 4;
             PaddingString = new string(' ', GamePadding);
             HorizontalBar = new string(HorizontalLineChar, GameWidth - 2);
+            // Define basic console colors dictionary to easily access them
             ConsoleBackgroundColors = new Dictionary<string, ConsoleColor>()
             {
                 {"red", ConsoleColor.Red},
@@ -73,6 +90,8 @@ namespace Motus
                 {"darkyellow", ConsoleColor.DarkYellow},
                 {"darkmagenta", ConsoleColor. DarkMagenta},
             };
+
+            // Define foreground color according to background color for better readability
             ConsoleTextColors = new Dictionary<string, ConsoleColor>()
             {
                 {"red", ConsoleColor.White},
@@ -92,10 +111,10 @@ namespace Motus
                 {"darkyellow", ConsoleColor.White},
                 {"darkmagenta", ConsoleColor.White},
             };
+
             EmptyLine ??= InnerSetLine("");
             DefaultInputValue ??= " ";
             CanInput = true;
-            #endregion
 
             Console.SetWindowSize(WindowWidth, WindowHeight);
         }
@@ -108,6 +127,8 @@ namespace Motus
 
         public string Encapsulate(string line)
         {
+            // Frame a line to match the game outside border
+
             Regex r = new Regex(RegexInputParamDelimiterPattern);
             string trimmedLine = line.Trim();
             string pseudoLine = trimmedLine;
@@ -125,8 +146,8 @@ namespace Motus
             char symb = VerticalLineChar;
             int padding;
 
-            // should throw error if line is too long
-            // the following behaviour is very foolish and not safe
+            // TODO: throw error if line is too long
+            // the following behaviour is very foolish
             if (lineLength > width)
             {
                 int excess = lineLength - width - 2; // -2 corresponds to the 2 border symbols
@@ -150,13 +171,17 @@ namespace Motus
 
         public string InnerSetLine(string line)
         {
+            // Frame one line
             return Encapsulate(line).Pad(GamePadding);
         }
 
         public string SetLine(string linesString)
         {
+            // Frame multiple lines from one visual resource
+
             try
             {
+                // extract lines with multiline delimiters
                 string[] linesArray = linesString.Split(SplitChar)
                     .Where(l => !IsNullOrEmpty(l)).ToArray();
 
@@ -165,14 +190,15 @@ namespace Motus
                     throw new StackOverflowException();
                 }
 
-                StringBuilder titleString = new StringBuilder();
-
+                StringBuilder stringBuilder = new StringBuilder();
+                
+                // Append each framed line to StringBuilder and return it
                 foreach (string line in linesArray.Where(l => !IsNullOrEmpty(l)))
                 {
-                    titleString.Append(InnerSetLine(line));
+                    stringBuilder.Append(InnerSetLine(line));
                 }
 
-                return titleString.ToString();
+                return stringBuilder.ToString();
             }
             catch (StackOverflowException)
             {
@@ -186,23 +212,28 @@ namespace Motus
             #region Render Period Initialization
             Dictionary<int, string[]> modifierDictionary = new Dictionary<int, string[]>();
 
+            // Set useful local methods
             bool HasSetModifiers()
             {
+                // Return a bool indicating if user has already input data
                 return modifierDictionary.Where(x => x.Value[0] != "<color>")
                            .Count(x => !x.Value[0].Equals(DefaultInputValue)) > 0;
             }
             int FirstUnsetInput()
             {
+                // Get index of first unset input modifier
                 return modifierDictionary.Where(x => x.Value[0] != "<color>").OrderBy(x => x.Key)
                     .FirstOrDefault(x => x.Value[0].Equals(DefaultInputValue)).Key;
             }
             int LastSetInput()
             {
+                // Get index of Last set input modifier
                 return modifierDictionary.OrderBy(x => x.Key).Where(x => x.Value[0] != "<color>")
                     .LastOrDefault(x => !x.Value[0].Equals(DefaultInputValue)).Key;
             }
             void WipeLastInput()
             {
+                // Remove last user input
                 try
                 {
                     modifierDictionary[LastSetInput()][0] = DefaultInputValue;
@@ -214,15 +245,19 @@ namespace Motus
             StringBuilder screenString = ScreenReader(screen, ref modifierDictionary);
             FormatScreen(screenString, modifierDictionary);
 
+            // Get the index of current modifier to set
             int modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput();
 
             if (modIndex == 0)
             {
+                // no input modifiers in screen
                 FormatScreen(screenString, modifierDictionary);
                 var input = Console.ReadKey();
             }
             else
             {
+                // Iterate over modifiers and set them
+
                 while (modifierDictionary.Count > 0 && CanInput)
                 {
                     modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
@@ -266,6 +301,8 @@ namespace Motus
 
         private StringBuilder ScreenReader(List<string> screen, ref Dictionary<int, string[]> modifierDictionary)
         {
+            // Read screen to display and extract modifier indexes
+
             StringBuilder output = new StringBuilder();
 
             foreach (string lineIdentifier in screen)
@@ -332,26 +369,37 @@ namespace Motus
 
         private void FormatScreen(StringBuilder screenBuilder, Dictionary<int, string[]> modifierDictionary)
         {
-
+            // Takes care of displaying colors and inputs values
+            
             Console.Clear();
+            // Set the index to which the frame has been rendered
             int renderedPartIndex = 0;
 
             foreach (var kvp in modifierDictionary.OrderBy(x => x.Key))
             {
                 if (kvp.Value[0].Equals("<color>"))
                 {
-                    // color context
+                    // Entering color context
+
+                    // Extract string before color modifier
                     string leftString = screenBuilder.ToString().Substring(renderedPartIndex, kvp.Key - renderedPartIndex);
+                    // Write it
                     Console.Write(leftString);
+                    // Change console color
                     SetColor(kvp.Value[1]);
+                    // Set rendering index
                     renderedPartIndex = kvp.Key;
                 }
                 else
                 {
-                    // input context
+                    // Entering input context
+
+                    // Put user input in line to display
                     screenBuilder[kvp.Key] = char.Parse(kvp.Value[0]);
                 }
             }
+
+            // Display remaining characters that contains no modifiers
             Console.WriteLine(screenBuilder.ToString().Substring(renderedPartIndex, screenBuilder.Length - renderedPartIndex));
         }
     }
