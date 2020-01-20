@@ -509,7 +509,7 @@ namespace Motus
 
         public void ShowStatistic()
         {
-            string[,] tab = this._game.Statistics();
+            string[,] tab = GameCore.Statistics();
 
             IDictionary<int, string[]> myScreenParams;
 
@@ -518,18 +518,27 @@ namespace Motus
             int statIndex = ScreenResources["GameplayScreen"].IndexOf("<1>");
 
             MyRenderer.VisualResources["TabStat"] = Join(MyRenderer.SplitChar, "" +
-                "┌─────┬─────┬─────┬──────────────────────────────────────────────────────────┐",
-                "│ ", tab[1, 1].Split("|")[0], "  │ ", tab[1, 1].Split("|")[1], "  │  ", tab[1, 1].Split("|")[2], " │  temps moyen par tentative                               │",
-                "├     ┼     ┼     ┼                                                          │",
-                "│     │     │     │  temps total                                             │",
-                "├     ┼     ┼     ┼                                                          │",
-                "│     │     │     │  nombre de tentative moyen                               │",
-                "├     ┼     ┼     ┼                                                          │",
-                "│     │     │     │                                                          │",
-                "├     ┼     ┼     ┼                                                          │",
-                "│     │     │     │                                                          │",
-                "└─────┴─────┴─────┴──────────────────────────────────────────────────────────┘"
+                "┌──────────────────────────────────────────────────────────┬────────┬────────┐",
+                "│ Statistiques sur le dernier niveau joué                  │ < en % │ > en % |",
+                "├──────────────────────────────────────────────────────────┼────────┼────────┤",
+                "│  Nombre de tentatives moyenne :"+ tab[0, 0].Split("|")[2] + "                          | " + tab[0, 0].Split("|")[0] + "│ " + tab[0, 1].Split("|")[1] + " │",
+                "│                                                          ┼        ┼        ┤",
+                "│  Temps par tentative moyen :"+ tab[0, 1].Split("|")[2] + "                             | " + tab[0, 1].Split("|")[0] + "│ " + tab[0, 1].Split("|")[1] + " │",
+                "│                                                          ┼        ┼        ┤",
+                "│  Temps total moyen :"+ tab[0, 2].Split("|")[2] + "                                      | " + tab[0, 2].Split("|")[0] + "│ " + tab[0, 2].Split("|")[1] + " │",
+                "└──────────────────────────────────────────────────────────┴────────┴────────┘",
+                "┌──────────────────────────────────────────────────────────┬─────────┬─────────┬─────────┐",
+                "│ Distribution des données enregistrées                    │         │         |         │",
+                "| par rapport à la dernière partie jouée                   │ < en %  │ > en %  | = en %  │",
+                "├──────────────────────────────────────────────────────────┼─────────┼─────────┼─────────┤",
+                "│  Nombre de tentatives moyenne                            |   " + tab[1, 0].Split("|")[0] + "   │   " + tab[1, 0].Split("|")[1] + "   │   " + tab[1, 0].Split("|")[2] + "   │",
+                "│                                                          ┼         ┼         ┼         ┤",
+                "│  Temps moyen par tentative                               |   " + tab[1, 1].Split("|")[0] + "   │   " + tab[1, 1].Split("|")[1] + "   │   " + tab[1, 1].Split("|")[2] + "   │",
+                "│                                                          ┼         ┼         ┼         ┤",
+                "│  Temps total moyen                                       |   " + tab[1, 2].Split("|")[0] + "   │   " + tab[1, 2].Split("|")[1] + "   │   " + tab[1, 2].Split("|")[2] + "   │",
+                "└──────────────────────────────────────────────────────────┴─────────┴─────────┴─────────┘"
             );
+            
             screenTemplate[statIndex] = "TabStat";
             MyRenderer.RenderScreen(screenTemplate);
 

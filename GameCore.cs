@@ -173,13 +173,13 @@ namespace Motus
             }
             //Console.ReadLine();
         }
-        public string[,] Statistics()
+        public static string[,] Statistics()
         {
             string datapath = "../../../Resources/data.txt";
 
             string[,] dataStat = new string[2, 3];
 
-            int nbTry = History.Count(s => s != null);
+            //int nbTry = History.Count(s => s != null);
 
             double avgTry = 0;
             double avgTimeTry = 0;
@@ -248,57 +248,56 @@ namespace Motus
                 supAvgTimeTot /= cpt * 100;
 
 
-                if (IsWon)//Stats of the game
-                {
-                    for (int i = 3; i < lines.Length - 1; i++)//doesn't count the last game which is the game studied
-                    {
-                        int t = int.Parse(lines[i].Split(",")[0]);
-                        if (t == int.Parse(lines.Last().Split(",")[0]))
-                        {
-                            if (int.Parse(lines[i].Split(",")[3]) < avgTry)
-                            {
-                                infAvgTryPerso += 1;
-                            }
-                            if (int.Parse(lines[i].Split(",")[3]) == avgTry)
-                            {
-                                idemAvgTryPerso += 1;
-                            }
-                            if (int.Parse(lines[i].Split(",")[1]) < avgTimeTot)
-                            {
-                                infAvgTimeTotPerso += 1;
-                            }
-                            if (int.Parse(lines[i].Split(",")[1]) == avgTimeTot)
-                            {
-                                idemAvgTimeTotPerso += 1;
-                            }
-                            if (int.Parse(lines[i].Split(",")[2]) < avgTimeTry)
-                            {
-                                infAvgTimeTryPerso += 1;
-                            }
-                            if (int.Parse(lines[i].Split(",")[2]) == avgTimeTry)
-                            {
-                                idemAvgTimeTryPerso += 1;
-                            }
-                            cpt += 1;
-                        }
-                    }
-                    supAvgTryPerso = cptPerso - infAvgTryPerso - idemAvgTryPerso;
-                    supAvgTimeTryPerso = cptPerso - infAvgTimeTryPerso - idemAvgTimeTryPerso;
-                    supAvgTimeTotPerso = cptPerso - infAvgTimeTotPerso - idemAvgTimeTotPerso;
 
-                    infAvgTryPerso /= cptPerso * 100;
-                    idemAvgTryPerso /= cptPerso * 100;
-                    supAvgTryPerso /= cptPerso * 100;
-                    infAvgTimeTryPerso /= cptPerso * 100;
-                    idemAvgTimeTryPerso /= cptPerso * 100;
-                    supAvgTimeTryPerso /= cptPerso * 100;
-                    infAvgTimeTotPerso /= cptPerso * 100;
-                    idemAvgTimeTotPerso /= cptPerso * 100;
-                    supAvgTimeTotPerso /= cptPerso * 100;
+                for (int i = 3; i < lines.Length - 1; i++)//doesn't count the last game which is the game studied
+                {
+                    int t = int.Parse(lines[i].Split(",")[0]);
+                    if (t == int.Parse(lines.Last().Split(",")[0]))
+                    {
+                        if (int.Parse(lines[i].Split(",")[3]) < avgTry)
+                        {
+                            infAvgTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[3]) == avgTry)
+                        {
+                            idemAvgTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[1]) < avgTimeTot)
+                        {
+                            infAvgTimeTotPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[1]) == avgTimeTot)
+                        {
+                            idemAvgTimeTotPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[2]) < avgTimeTry)
+                        {
+                            infAvgTimeTryPerso += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[2]) == avgTimeTry)
+                        {
+                            idemAvgTimeTryPerso += 1;
+                        }
+                        cpt += 1;
+                    }
                 }
-                dataStat[0, 0] = String.Format("{0}|{1}", Math.Round(infAvgTry, 1).ToString("0.0"), Math.Round(supAvgTry, 1).ToString("0.0")); ;
-                dataStat[0, 1] = String.Format("{0}|{1}", Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0"));
-                dataStat[0, 2] = String.Format("{0}|{1}", Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0"));
+                supAvgTryPerso = cptPerso - infAvgTryPerso - idemAvgTryPerso;
+                supAvgTimeTryPerso = cptPerso - infAvgTimeTryPerso - idemAvgTimeTryPerso;
+                supAvgTimeTotPerso = cptPerso - infAvgTimeTotPerso - idemAvgTimeTotPerso;
+
+                infAvgTryPerso /= cptPerso * 100;
+                idemAvgTryPerso /= cptPerso * 100;
+                supAvgTryPerso /= cptPerso * 100;
+                infAvgTimeTryPerso /= cptPerso * 100;
+                idemAvgTimeTryPerso /= cptPerso * 100;
+                supAvgTimeTryPerso /= cptPerso * 100;
+                infAvgTimeTotPerso /= cptPerso * 100;
+                idemAvgTimeTotPerso /= cptPerso * 100;
+                supAvgTimeTotPerso /= cptPerso * 100;
+
+                dataStat[0, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTry, 1).ToString("0.0"), Math.Round(supAvgTry, 1).ToString("0.0"), avgTry.ToString()); ;
+                dataStat[0, 1] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0"), Math.Round(avgTimeTry/1000, 1).ToString("0.0"));
+                dataStat[0, 2] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(avgTimeTot / 1000, 1).ToString("0.0"));
 
                 dataStat[1, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTryPerso, 1).ToString("0.0"), Math.Round(supAvgTryPerso, 1).ToString("0.0"));
                 dataStat[1, 1] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(supAvgTimeTryPerso, 1).ToString("0.0"));
