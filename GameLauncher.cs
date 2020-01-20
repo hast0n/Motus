@@ -282,7 +282,7 @@ namespace Motus
 
                         "[empty]","<1>", "[empty]",
 
-                        "[empty]", "[backToMainMenu]",
+                        "2[empty]", "[backToMainMenu]",
 
                         "[empty]", "botBar",
                     }
@@ -349,7 +349,7 @@ namespace Motus
                     letterNb = 5;
                     break;
             }
-            this._game = new GameCore(letterNb, triesNb, difficultyLevel);
+            this._game = new GameCore(letterNb, triesNb, difficultyLevel > 2);
             SetTimer();
         }
 
@@ -515,23 +515,22 @@ namespace Motus
             MyRenderer.VisualResources["TabStat"] = Join(MyRenderer.SplitChar, "" +
                 "┌──────────────────────────────────────────────────────────┬────────┬─────────┐",
                 "│ Statistiques sur le dernier niveau joué                  │ < en % │ >= en % │",
-                "├──────────────────────────────────────────────────────────┼────────┼─────────┤",
-                "│  Nombre de tentatives moyenne : "+ tab[0, 0].Split("|")[2] + "                        |   " + tab[0, 0].Split("|")[0] + "  │   " + tab[0, 0].Split("|")[1] + "  │",
-                "│                                                          ┼        ┼         ┤",
-                "│  Temps par tentative moyen : "+ tab[0, 1].Split("|")[2] + "                      |   " + tab[0, 1].Split("|")[0] + "  │   " + tab[0, 1].Split("|")[1] + "  │",
-                "│                                                          ┼        ┼         ┤",
-                "│  Temps total moyen : "+ tab[0, 2].Split("|")[2] + "                              |   " + tab[0, 2].Split("|")[0] + "  │   " + tab[0, 2].Split("|")[1] + "  │",
-                "└──────────────────────────────────────────────────────────┴────────┴─────────┘",
+                "└──────────────────────────────────────────────────────────┼────────┼─────────┘",
+                "  Nombre de tentatives moyenne : "+ tab[0, 0].Split("|")[2] + "                           " + tab[0, 0].Split("|")[0] + "     " + tab[0, 0].Split("|")[1],
+                " ",
+                "  Temps par tentative moyen : "+ tab[0, 1].Split("|")[2] + "                         " + tab[0, 1].Split("|")[0] + "     " + tab[0, 1].Split("|")[1],
+                " ",
+                "  Temps total moyen : "+ tab[0, 2].Split("|")[2] + "                                 " + tab[0, 2].Split("|")[0] + "     " + tab[0, 2].Split("|")[1],
+                " ", " ",
                 "┌──────────────────────────────────────────────────────────┬─────────┬─────────┬─────────┐",
-                "│ Distribution des données enregistrées                    │         │         |         │",
-                "| par rapport à la dernière partie jouée                   │ < en %  │ > en %  | = en %  │",
-                "├──────────────────────────────────────────────────────────┼─────────┼─────────┼─────────┤",
-                "│  Nombre de tentatives moyenne                            |   " + tab[1, 0].Split("|")[0] + "   │   " + tab[1, 0].Split("|")[1] + "   │   " + tab[1, 0].Split("|")[2] + "   │",
-                "│                                                          ┼         ┼         ┼         ┤",
-                "│  Temps moyen par tentative                               |   " + tab[1, 1].Split("|")[0] + "   │   " + tab[1, 1].Split("|")[1] + "   │   " + tab[1, 1].Split("|")[2] + "   │",
-                "│                                                          ┼         ┼         ┼         ┤",
-                "│  Temps total moyen                                       |   " + tab[1, 2].Split("|")[0] + "   │   " + tab[1, 2].Split("|")[1] + "   │   " + tab[1, 2].Split("|")[2] + "   │",
-                "└──────────────────────────────────────────────────────────┴─────────┴─────────┴─────────┘"
+                "│ Distribution des données enregistrées                    │         │         │         │",
+                "│ par rapport à la dernière partie jouée                   │ < en %  │ > en %  │ = en %  │",
+                "└──────────────────────────────────────────────────────────┼─────────┼─────────┼─────────┘",
+                "  Nombre de tentatives moyenne                               " + tab[1, 0].Split("|")[0] + "      " + tab[1, 0].Split("|")[1] + "      " + tab[1, 0].Split("|")[2],
+                " ",
+                "  Temps moyen par tentative                                  " + tab[1, 1].Split("|")[0] + "      " + tab[1, 1].Split("|")[1] + "      " + tab[1, 1].Split("|")[2],
+                " ",
+                "  Temps total moyen                                          " + tab[1, 2].Split("|")[0] + "      " + tab[1, 2].Split("|")[1] + "      " + tab[1, 2].Split("|")[2]
             );
             
             screenTemplate[statIndex] = "[TabStat]";

@@ -9,7 +9,6 @@ namespace Motus
         public readonly string Word;
         public readonly int TriesNb;
         public readonly int LetterNb;
-        public readonly int DifficultyLevel;
         public string[] Dictionary { private set; get; }
         public string[] History { get; }
 
@@ -19,27 +18,24 @@ namespace Motus
         public bool IsWon => this.History.Where(c => c != null).ToArray()
                     .Last().Split("|")[0].Equals(this.Word);
 
-        public GameCore(int letterNb, int triesNb, int difficultyLevel)
+        public GameCore(int letterNb, int triesNb, bool randomizeFirstLetter)
         {
             this.LetterNb = letterNb;
             this.TriesNb = triesNb;
-            this.DifficultyLevel = difficultyLevel;
 
             this.Word = this.SelectWord(letterNb).ToUpper();
             string tmp;
 
-            if (new [] {1, 2}.Contains(difficultyLevel))
-            {
-                // string interpolation : $"{exp1}{exp2}"
-                // instead of string formatting : string.format("{0}{1}", exp1, exp2)
-                tmp = $"{this.Word[0]}{new string(' ', letterNb - 1)}";
-            }
-            else 
+            if (randomizeFirstLetter)
             {
                 int index = new Random().Next(0, letterNb - 1);
                 char[] tmpCharArray = new char[letterNb];
                 tmpCharArray[index] = this.Word[index];
                 tmp = new string(tmpCharArray);
+            }
+            else 
+            {
+                tmp = $"{this.Word[0]}{new string(' ', letterNb - 1)}";
             }
             
             this.History = new string[triesNb + 1];
@@ -134,8 +130,6 @@ namespace Motus
                 }
             }
 
-
-
             if (IsWon) //if the game is won, the game data are saved : Difficulty level, overall time, average time by word, number of try
             {
                 //Average time by word on this game
@@ -143,21 +137,18 @@ namespace Motus
                 int overallTime = 0;
                 int i = 1;
                 bool noEnd = true;
-                while (i < History.Length & noEnd)
+
+                while (i < History.Length)
                 {
-                    while (History[i] != null)
+                    if (History[i] != null)
                     {
                         avgTime += (int.Parse(History[i].Split("|")[2]) - int.Parse(History[i - 1].Split("|")[2]));
                         overallTime += int.Parse(History[i].Split("|")[2]);
                     }
 
-                    if (History[i] == null)
-                    {
-                        noEnd = false;
-                    }
-
                     i++;
                 }
+
                 avgTime /= (i - 1);
                 string entry = String.Format("{0},{1},{2},{3}", DifficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (History.Length - 1).ToString());
 
