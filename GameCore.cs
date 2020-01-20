@@ -204,7 +204,7 @@ namespace Motus
                 for (int i = 3; i < lines.Length; i++)
                 {
                     int t = int.Parse(lines[i].Split(",")[0]);
-                    if (t == DifficultyLevel)
+                    if (t == int.Parse(lines.Last().Split(",")[0]))
                     {
                         avgTimeTot += int.Parse(lines[i].Split(",")[1]);
                         avgTimeTry += int.Parse(lines[i].Split(",")[2]);
@@ -253,7 +253,7 @@ namespace Motus
                     for (int i = 3; i < lines.Length - 1; i++)//doesn't count the last game which is the game studied
                     {
                         int t = int.Parse(lines[i].Split(",")[0]);
-                        if (t == DifficultyLevel)
+                        if (t == int.Parse(lines.Last().Split(",")[0]))
                         {
                             if (int.Parse(lines[i].Split(",")[3]) < avgTry)
                             {

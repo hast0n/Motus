@@ -167,7 +167,7 @@ namespace Motus
                     "levelInput",
                     Join(MyRenderer.SplitChar,
                         "┌───┐",
-                        "---> │ <input:[1-5]{1}> │ <---",
+                        "---> │ <input:[1-6]{1}> │ <---",
                         "└───┘"
                     )
                 },
@@ -218,6 +218,12 @@ namespace Motus
                 {
                     "backToMainMenu",
                     "<color:white> Appuyez sur n'importe quelle touche pour revenir au menu principal... <color:black>"
+                },
+                {
+                    "descStat",
+                    Join(MyRenderer.SplitChar, ""+
+                        "Statistiques de jeu",
+                        "Vous trouverez ci dessous les statistiques pour la dernière partie jouée.")
                 }
             };
 
@@ -236,7 +242,7 @@ namespace Motus
 
                         "topBar", "2[empty]",
 
-                        "[intro]", "[empty]", "[levels]", "2[empty]", "[levelInput]", "[levelHint]",
+                        "[intro]", "[empty]", "[levels]","[displayStats]", "2[empty]", "[levelInput]", "[levelHint]",
 
                         "[empty]", "botBar",
                     }
@@ -257,6 +263,26 @@ namespace Motus
                         "<2>", "[empty]", "[gameplayInput]", 
                         
                         "[empty]", "<3>", "[empty]", "<4>",
+
+                        "[empty]", "botBar",
+                    }
+                },
+                {
+                    "StatisticScreen", new List<string>
+                    {
+                        "empty",
+
+                        "topBar", "[empty]", "[title]", "[empty]", "botBar",
+
+                        "empty",
+
+                        "topBar", "[empty]", 
+
+                        "[empty]", "[descStat]", "[empty]",
+
+                        "[empty]","<1>", "[empty]",
+
+                        "[empty]",
 
                         "[empty]", "botBar",
                     }
@@ -366,7 +392,7 @@ namespace Motus
         public void LaunchMainMenu()
         {
             bool play = true;
-
+            IDictionary<int, string[]> myScreenParams;
             while (play)
             {
                 // Game Renderer is wiped out when exiting current game loop
@@ -374,7 +400,7 @@ namespace Motus
                 // it helps to deal with asynchronous bad behaviour due to Timer
                 SetGameRenderer(); 
 
-                IDictionary<int, string[]> myScreenParams = MyRenderer.RenderScreen(ScreenResources["WelcomeScreen"]);
+                myScreenParams = MyRenderer.RenderScreen(ScreenResources["WelcomeScreen"]);
                 int userChoice = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
 
                 if (new[] { 1, 2, 3, 4, 5 }.Contains(userChoice))
@@ -388,6 +414,11 @@ namespace Motus
                         Console.Clear();
                         // Exemple pour la page rejouer
                     }
+                }
+                else
+                {
+                    ShowStatistic();
+                    myScreenParams = MyRenderer.RenderScreen(ScreenResources["StatisticScreen"]);
                 }
             }
         }
@@ -476,205 +507,32 @@ namespace Motus
             this._game.SaveData();
         }
 
-        public void ShowStatistics()
+        public void ShowStatistic()
         {
             string[,] tab = this._game.Statistics();
+
             IDictionary<int, string[]> myScreenParams;
 
-            //myScreenParams = MyRenderer.RenderScreen("WelcomeScreen");
+            List<string> screenTemplate = ScreenResources["StatisticScreen"].ToList();
 
-            //si la premiere ligne de tab est nulle lors première partie
+            int statIndex = ScreenResources["GameplayScreen"].IndexOf("<1>");
 
-            /*Console.WriteLine("\tLes Statistiques pour le niveau {0}", DifficultyLevel);
-            Console.WriteLine("Pour le niveau {0} choisi, le temps moyen par tentative était de {1} secondes, le temps moyen par partie était de {2} secondes \n", DifficultyLevel, Math.Round((avgTimeTry / 1000), 1).ToString("0.0"), Math.Round((avgTimeTot / 1000), 1).ToString("0.0"));
-
-            Console.WriteLine("Nombres de tentatives");
-
-            Console.BackgroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < infAvgTry + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.Write(" {0} % ont réalisé moins de tentatives que la moyenne\n", Math.Round(infAvgTry, 1).ToString("0.0"));
-
-            Console.BackgroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < supAvgTry + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.WriteLine(" {0} % ont réalisé plus de tentatives que la moyenne\n", Math.Round(supAvgTry, 1).ToString("0.0"));
-
-
-            Console.WriteLine("Temps moyen par tentative ");
-
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            for (int i = 0; i < infAvgTimeTry + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.Write(" {0} % ont un temps par tentative inférieur au temps moyen\n", Math.Round(infAvgTimeTry, 1).ToString("0.0"));
-
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            for (int i = 0; i < supAvgTimeTry + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.WriteLine(" {0} % ont un temps par tentative supérieur au temps moyen\n", Math.Round(supAvgTimeTry, 1).ToString("0.0"));
-
-
-            Console.WriteLine("Temps total moyen");
-
-            Console.BackgroundColor = ConsoleColor.Red;
-            for (int i = 0; i < infAvgTimeTot + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.Write(" {0} % ont un temps de résolution inférieur au temps moyen\n", Math.Round(infAvgTimeTot, 1).ToString("0.0"));
-
-            Console.BackgroundColor = ConsoleColor.Red;
-            for (int i = 0; i < supAvgTimeTot + 1; i += 2)
-            {
-                Console.Write(" ");
-            }
-            Console.ResetColor();
-            Console.WriteLine(" {0} % ont un temps de résolution supérieur au temps moyen\n", Math.Round(supAvgTimeTot, 1).ToString("0.0"));
-            
-            Console.WriteLine("\tVos Statistiques pour le niveau {0}", DifficultyLevel);
-            Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", nbTry, int.Parse(History.Where(c => c != null).ToArray().Last().Split("|")[2]) / 1000);
-            //Console.WriteLine("Vous avez terminé la partie en {0} tentative(s) et {1} secondes", (this._game.History.Length-1),int.Parse(this._game.History.Where(c => c != null).ToArray().Last().Split("|")[2])/1000 );
-            */
-            #region 
-            /*MyRenderer.VisualResources = new Dictionary<string, string>
-            {
-                {
-                "bar",
-                "_"
-                },
-                {
-                "vbar",
-                "|"
-                },
-                {
-                "angle1",
-                "┌"
-                },
-                {
-                "angle2",
-                "┐"
-                },
-                {
-                "angle3",
-                "└"
-                },
-                {
-                "angle4",
-                "┘"
-                },
-                {
-                    "tentatives",
-                    string.Join(MyRenderer.SplitChar,
-                        "Nombres de tentatives")
-                },
-                {
-                    "tempstent",
-                    string.Join(MyRenderer.SplitChar,
-                        "Temps moyen par tentative")
-                },
-                {
-                    "tempstot",
-                    string.Join(MyRenderer.SplitChar,
-                        "Temps total moyen")
-                },
-                {
-                    "empty",
-                    "\n"
-                },
-                {
-                    "stattrya",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        infAvgTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-                        )
-                },
-                {
-                    "stattryb",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        supAvgTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-                        )
-                },
-                {
-                    "statttota",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        infAvgTimeTotPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-                        )
-                },
-                {
-                    "statttotb",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        supAvgTimeTotPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-                        )
-                },
-                {
-                    "stattmoya",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        infAvgTimeTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés moins de tentatives que vous"
-                        )
-                },
-                {
-                    "stattmoyb",
-                    string.Join(MyRenderer.SplitChar, ""+
-                        supAvgTimeTryPerso/(lines.Length-4)*100+"% des joueurs ont réalisés plus de tentatives que vous"
-                        )
-                }
-            };
-            MyRenderer.ScreenResources = new Dictionary<string, string[]>()
-            {
-                {
-
-                    "StatScreen", new []
-                    {
-                        "tentatives",
-
-                        "stattrya",
-                        "angle1","4[bar]", "angle2",
-                        "vbar","[empty]","vbar",
-                        "angle3","3[bar]",  "angle4",
-                        "stattryb",
-
-                        "empty",
-
-                        "tempstent",
-                        "stattmoya",
-                        "angle1","[bar]",  "angle2",
-                        "vbar","[empty]","vbar",
-                        "angle3","7[bar]",  "angle4",
-                        "stattmoyb",
-
-                        "empty",
-
-                        "tempstot",
-                        "statttota",
-                        "angle1","bar",  "angle2",
-                        "vbar","[empty]","vbar",
-                        "angle3","bar",  "angle4",
-                        "statttotb",
-                    }
-                }
-            };
-
-            //IDictionary<int, string[]> myScreenParams;
-            //myScreenParams = MyRenderer.RenderScreen("StatScreen");*/
-            #endregion
-
+            MyRenderer.VisualResources["TabStat"] = Join(MyRenderer.SplitChar, "" +
+                "┌─────┬─────┬─────┬──────────────────────────────────────────────────────────┐",
+                "│ ", tab[1, 1].Split("|")[0], "  │ ", tab[1, 1].Split("|")[1], "  │  ", tab[1, 1].Split("|")[2], " │  temps moyen par tentative                               │",
+                "├     ┼     ┼     ┼                                                          │",
+                "│     │     │     │  temps total                                             │",
+                "├     ┼     ┼     ┼                                                          │",
+                "│     │     │     │  nombre de tentative moyen                               │",
+                "├     ┼     ┼     ┼                                                          │",
+                "│     │     │     │                                                          │",
+                "├     ┼     ┼     ┼                                                          │",
+                "│     │     │     │                                                          │",
+                "└─────┴─────┴─────┴──────────────────────────────────────────────────────────┘"
+            );
+            screenTemplate[statIndex] = "TabStat";
+            MyRenderer.RenderScreen(screenTemplate);
 
         }
-
-
-
-
     }
 }
