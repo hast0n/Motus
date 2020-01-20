@@ -185,6 +185,13 @@ namespace Motus
             double avgTimeTry = 0;
             double avgTimeTot = 0;
             int cpt = 0;
+            double infAvgTry = 0;
+            double infAvgTimeTry = 0;
+            double infAvgTimeTot = 0;
+            double supAvgTry = 0;
+            double supAvgTimeTry = 0;
+            double supAvgTimeTot = 0;
+
             double infAvgTryPerso = 0;
             double infAvgTimeTryPerso = 0;
             double infAvgTimeTotPerso = 0;
@@ -216,10 +223,6 @@ namespace Motus
                 avgTimeTry /= cpt;
                 avgTry /= cpt;
 
-                double infAvgTry = 0;
-                double infAvgTimeTry = 0;
-                double infAvgTimeTot = 0;
-
                 for (int i = 3; i < lines.Length; i++)
                 {
                     if (int.Parse(lines[i].Split(",")[3]) < avgTry)
@@ -236,9 +239,9 @@ namespace Motus
                     }
                 }
 
-                double supAvgTry = cpt - infAvgTry;
-                double supAvgTimeTry = cpt - infAvgTimeTry;
-                double supAvgTimeTot = cpt - infAvgTimeTot;
+                supAvgTry = cpt - infAvgTry;
+                supAvgTimeTry = cpt - infAvgTimeTry;
+                supAvgTimeTot = cpt - infAvgTimeTot;
 
                 infAvgTry /= cpt * 100;
                 supAvgTry /= cpt * 100;
@@ -295,9 +298,9 @@ namespace Motus
                 idemAvgTimeTotPerso /= cptPerso * 100;
                 supAvgTimeTotPerso /= cptPerso * 100;
 
-                dataStat[0, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTry, 1).ToString("0.0"), Math.Round(supAvgTry, 1).ToString("0.0"), avgTry.ToString()); ;
-                dataStat[0, 1] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0"), Math.Round(avgTimeTry/1000, 1).ToString("0.0"));
-                dataStat[0, 2] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(avgTimeTot / 1000, 1).ToString("0.0"));
+                dataStat[0, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTry, 1).ToString("0.0")=="NaN"?"0.0": Math.Round(infAvgTry, 1).ToString("0.0"),Math.Round(supAvgTry, 1).ToString("0.0")=="NaN"?"0.0":Math.Round(supAvgTry, 1).ToString("0.0"), avgTry.ToString() == "NaN" ? "0" : avgTry.ToString()); ;
+                dataStat[0, 1] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTry, 1).ToString("0.0"), Math.Round(avgTimeTry/1000, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTry, 1).ToString("0.0"));
+                dataStat[0, 2] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTot, 1).ToString("0.0"), Math.Round(avgTimeTot / 1000, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTot, 1).ToString("0.0"));
 
                 dataStat[1, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTryPerso, 1).ToString("0.0"), Math.Round(supAvgTryPerso, 1).ToString("0.0"));
                 dataStat[1, 1] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(supAvgTimeTryPerso, 1).ToString("0.0"));
