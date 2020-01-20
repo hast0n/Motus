@@ -12,19 +12,36 @@ using static System.String;
 
 namespace Motus
 {
+    public class GameHasEndedException : Exception
+    {
+        public GameHasEndedException()
+        {
+        }
+
+        public GameHasEndedException(string message)
+            : base(message)
+        {
+        }
+
+        public GameHasEndedException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
+
     class GameLauncher
     {
-        private readonly Renderer MyRenderer;
+        private Renderer MyRenderer;
         private Stopwatch _watch;
         private GameCore _game;
         private Timer _timer;
         private double _lastGuessTime;
         private bool _isLive;
-        private int _infoIndex;
+        public Dictionary<string, List<string>> ScreenResources;
 
         private int NbTried => this._game.History.Where(c => c != null).ToArray().Length - 1;
 
-        public GameLauncher()
+        private void SetGameRenderer()
         {
             MyRenderer = new Renderer()
             {
@@ -37,16 +54,13 @@ namespace Motus
                 // https://regexr.com/4s4lb
                 RegexTextAttributeDelimiterPattern = @"(<.*>)",
                 //RegexScreenParamDelimiterPattern = @"(?:([1-9]+)\*)?(?:([a-z]+)|(?:\[[a-z]+\]))",
-                RegexScreenParamDelimiterPattern = @"([1-9]*)\[([A-za-z]+)\]",
+                RegexScreenParamDelimiterPattern = @"([1-9]*)\[([A-za-z0-9]+)\]",
                 RegexInputDelimiterPattern = @"<(?:input|color):[^>]+>",
                 RegexInputParamDelimiterPattern = @"<(input|color):([^>]+)>",
-                DefaultInputValue = "."
             };
 
             MyRenderer.InitDefault();
             SetRendererResources();
-
-            _infoIndex = MyRenderer.ScreenResources["GameplayScreen"].IndexOf("<1>");
         }
 
         private void SetRendererResources()
@@ -68,8 +82,54 @@ namespace Motus
                 {
                     "intro",
                     Join(MyRenderer.SplitChar, 
-                        "Bonjour et bienvenue sur Motus, le jeu dans le quel vous devinez des mots !!", 
-                        "Wahoooo c'est trop génial ! Allez, vas-y choisis un niveau :")
+                        "Bonjour et bienvenue dans Motus, le jeu dans lequel vous devinez des mots !!", 
+                        "Wahoooo c'est trop génial ! Commencez par choisir parmis ",
+                        "un dès niveaux de difficultés suivants :")
+                },
+                {
+                    "level1",
+                    Join(MyRenderer.SplitChar, "┌──────────┐",
+                        "│ Niveau 1 │",
+                        "└──────────┘", " ",
+                        "Le mot à deviner contient 4 lettres dont la première est donnée.",
+                        "Vous avez 6 essaies et aucune limite de temps pour trouver le mot."
+                    )
+                },
+                {
+                    "level2",
+                    Join(MyRenderer.SplitChar, "┌──────────┐",
+                        "│ Niveau 2 │",
+                        "└──────────┘", " ",
+                        "Le mot à deviner contient 5 lettres dont une donnée aléatoirement.",
+                        "Vous avez 10 essaies et 1 minutes pour trouver le mot."
+                    )
+                },
+                {
+                    "level3",
+                    Join(MyRenderer.SplitChar, "┌──────────┐",
+                        "│ Niveau 3 │",
+                        "└──────────┘", " ",
+                        "Le mot à deviner contient 8 lettres dont une donnée aléatoirement.",
+                        "Vous avez 8 essaies et 45 secondes pour trouver le mot."
+                    )
+                },
+                {
+                    "level4",
+                    Join(MyRenderer.SplitChar, "┌──────────┐",
+                        "│ Niveau 4 │",
+                        "└──────────┘", " ",
+                        "Le mot à deviner contient 6 lettres dont une donnée aléatoirement.",
+                        "Vous avez 8 essaies et 30 secondes pour trouver le mot."
+                    )
+                },
+                {
+                    "level5",
+                    Join(MyRenderer.SplitChar, "┌──────────┐",
+                        "│ Niveau 5 │",
+                        "└──────────┘", " ",
+                        "Le mot à deviner contient 5 lettres dont une donnée aléatoirement.",
+                        "vous avez 8 essaies et 15 secondes pour trouver le mot."
+                    )
                 },
                 {
                     // characters used : │ ─ ├ ┼ ┤ ┌ ┬ ┐ └ ┴ ┘
@@ -90,21 +150,17 @@ namespace Motus
                 {
                     "levels",
                     Join(MyRenderer.SplitChar, "" +
-                        "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
-                        "│ 1 │──│ 4 lettres dont la première donnée, pas de limite de temps, 6 essais │",
-                        "└───┘  └─────────────────────────────────────────────────────────────────────┘",
-                        "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
-                        "│ 2 │──│       5 lettres dont la première donnée, 1 minute, 10 essais        │",
-                        "└───┘  └─────────────────────────────────────────────────────────────────────┘",
-                        "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
-                        "│ 3 │──│   8 lettres dont une donnée aléatoirement, 45 secondes, 8 essais    │",
-                        "└───┘  └─────────────────────────────────────────────────────────────────────┘",
-                        "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
-                        "│ 4 │──│   6 lettres dont une donnée aléatoirement, 30 secondes, 8 essais    │",
-                        "└───┘  └─────────────────────────────────────────────────────────────────────┘",
-                        "┌───┐  ┌─────────────────────────────────────────────────────────────────────┐",
-                        "│ 5 │──│   5 lettres dont une donnée aléatoirement, 15 secondes, 8 essais    │",
-                        "└───┘  └─────────────────────────────────────────────────────────────────────┘"
+                        "┌─────┬──────────────────────────────────────────────────────────────────────┐",
+                        "│  1  │  4 lettres dont la première donnée, pas de limite de temps, 6 essais │",
+                        "├     ┼                                                                      │",
+                        "│  2  │  5 lettres dont la première donnée, 1 minute, 10 essais              │",
+                        "├     ┼                                                                      │",
+                        "│  3  │  8 lettres dont une donnée aléatoirement, 45 secondes, 8 essais      │",
+                        "├     ┼                                                                      │",
+                        "│  4  │  6 lettres dont une donnée aléatoirement, 30 secondes, 8 essais      │",
+                        "├     ┼                                                                      │",
+                        "│  5  │  5 lettres dont une donnée aléatoirement, 15 secondes, 8 essais      │",
+                        "└─────┴──────────────────────────────────────────────────────────────────────┘"
                     )
                 },
                 {
@@ -116,10 +172,15 @@ namespace Motus
                     )
                 },
                 {
+                    "levelHint",
+                    "Saisissez une option au clavier et validez en appuyant sur Entrée."
+                },
+                {
                     "gameplayHint",
                     Join(MyRenderer.SplitChar, ""+
                         "Saisissez les lettres qui composent selon vous le mot mystère !",
-                        "Saisissez-les unes par unes et appuyez sur [Entrée] quand vous avez terminé :"
+                        "Saisissez-les unes à unes et appuyez sur Entrée quand vous avez terminé.",
+                        "Bonne chance !"
                         )
                 },
                 {
@@ -142,12 +203,27 @@ namespace Motus
                 {
                     "inputAreaTextIndicator",
                     "Saisissez ci-dessous :"
+                },
+                {
+                    "startHint",
+                    "<color:white> Appuyez sur n'importe quelle touche pour commencer <color:black>"
+                },
+                {
+                    "displayStats",
+                    Join(MyRenderer.SplitChar, "┌─────┬──────────────────────────────────────────────────────────────────────┐",
+                        "│  6  │  Afficher les statistiques de jeu                                    │",
+                        "└─────┴──────────────────────────────────────────────────────────────────────┘"
+                    )
+                },
+                {
+                    "backToMainMenu",
+                    "<color:white> Appuyez sur n'importe quelle touche pour revenir au menu principal... <color:black>"
                 }
             };
 
             // [(.*)] : group that needs encapsulation
             // ([1-9]*)\[([a-z]+)\] : group that needs encapsulation and can be repeated
-            MyRenderer.ScreenResources = new Dictionary<string, List<string>>()
+            ScreenResources = new Dictionary<string, List<string>>()
             {
                 {
                     "WelcomeScreen", new List<string>
@@ -160,7 +236,7 @@ namespace Motus
 
                         "topBar", "2[empty]",
 
-                        "[intro]", "3[empty]", "[levels]", "[empty]", "[levelInput]",
+                        "[intro]", "[empty]", "[levels]", "2[empty]", "[levelInput]", "[levelHint]",
 
                         "[empty]", "botBar",
                     }
@@ -174,11 +250,13 @@ namespace Motus
 
                         "empty",
 
-                        "topBar", "2[empty]",
+                        "topBar", "[empty]", "<1>", "[empty]",
 
-                        "[gameplayHint]", "[empty]", "[caption]", "2[empty]", 
-                        "[inputAreaTextIndicator]", "[empty]", "[gameplayInput]", 
-                        "[empty]", "<1>", "[empty]",
+                        "[gameplayHint]", "[empty]", "[caption]", "2[empty]",
+
+                        "<2>", "[empty]", "[gameplayInput]", 
+                        
+                        "[empty]", "<3>", "[empty]", "<4>",
 
                         "[empty]", "botBar",
                     }
@@ -281,49 +359,90 @@ namespace Motus
             }
 
             inputStringBuilder.Append(botBar);
+
             MyRenderer.VisualResources["gameplayInput"] = inputStringBuilder.ToString();
         }
 
-        public void Start()
+        public void LaunchMainMenu()
         {
-            IDictionary<int, string[]> myScreenParams;
+            bool play = true;
 
-            myScreenParams = MyRenderer.RenderScreen("WelcomeScreen");
-            int difficultyLevel = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
+            while (play)
+            {
+                // Game Renderer is wiped out when exiting current game loop
+                // Even if it is not a clean solution to deal with the screen still waiting for input,
+                // it helps to deal with asynchronous bad behaviour due to Timer
+                SetGameRenderer(); 
+
+                IDictionary<int, string[]> myScreenParams = MyRenderer.RenderScreen(ScreenResources["WelcomeScreen"]);
+                int userChoice = int.Parse(myScreenParams[myScreenParams.Keys.Min()][0]);
+
+                if (new[] { 1, 2, 3, 4, 5 }.Contains(userChoice))
+                {
+                    try
+                    {
+                        Start(userChoice);
+                    }
+                    catch (GameHasEndedException e)
+                    {
+                        Console.Clear();
+                        // Exemple pour la page rejouer
+                    }
+                }
+            }
+        }
+
+        public void Start(int difficultyLevel)
+        {
+            List<string> screenTemplate = ScreenResources["GameplayScreen"].ToList(); // .ToList() To create a copy
+
+            int startHintIndex = ScreenResources["GameplayScreen"].IndexOf("<2>");
+            int levelIndicatorIndex = ScreenResources["GameplayScreen"].IndexOf("<1>");
+            int infoIndex = ScreenResources["GameplayScreen"].IndexOf("<3>");
+
+            screenTemplate[levelIndicatorIndex] = $"[level{difficultyLevel}]";
+            screenTemplate[startHintIndex] = "[startHint]";
+
+            MyRenderer.RenderScreen(screenTemplate);
+            screenTemplate[startHintIndex] = "[inputAreaTextIndicator]";
+
             SetGameParameters(difficultyLevel);
             
             _isLive = true;
-            _lastGuessTime = this._watch.ElapsedMilliseconds;
-
-
-            while (this._game.TriesNb - this.NbTried > 0 && this._isLive) // prevent cycling after a correct answer
+            _lastGuessTime = _watch.ElapsedMilliseconds;
+            
+            while (_game.TriesNb - NbTried > 0 && _isLive)
             {
                 BuildUserFeedbackString();
-                myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
-                if (!_isLive) { break; }
+                IDictionary<int, string[]> myScreenParams = MyRenderer.RenderScreen(screenTemplate);
+                if (!_isLive) { throw new GameHasEndedException("game has ended."); }
                 string userInput = Concat(myScreenParams.Values.Select(x => x[0]));
 
                 // prevent keeping cycling after timeout
-                while (!this._game.Dictionary.Contains(userInput.ToLower()) && this._isLive)
+                while (!_game.Dictionary.Contains(userInput.ToLower()) && _isLive)
                 {
-                    // TODO : ne pas changer directement le GameplayScreen - utiliser asset
-                    MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[badWordError]";
-                    myScreenParams = MyRenderer.RenderScreen("GameplayScreen");
-                    if (!_isLive) { break; }
+                    screenTemplate[infoIndex] = "[badWordError]";
+                    myScreenParams = MyRenderer.RenderScreen(screenTemplate);
+                    if (!_isLive) { throw new GameHasEndedException("game has ended."); }
                     userInput = Concat(myScreenParams.Values.Select(x => x[0]));
                 }
 
-                // get out of gameplay if timed out and prevent further execution
-                if (!_isLive) { break; } 
+                screenTemplate[infoIndex] = "[empty]";
 
-                MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[empty]";
+                double time = _watch.ElapsedMilliseconds - _lastGuessTime;
+                _game.CheckPosition(userInput.ToUpper(), (int)time);
+                _lastGuessTime = time;
 
-                double time = this._watch.ElapsedMilliseconds - this._lastGuessTime;
-                this._game.CheckPosition(userInput.ToUpper(), (int)time);
-                this._lastGuessTime = time;
+                // !_isLive to handle time out
+                if (_game.IsWon)
+                {
+                    break;
+                }
 
-                // !_isLive to handle time out if it occurs between the 2 break statements (will most likely never happen)
-                if (!_isLive || _game.IsWon) { break; }
+                if (!_isLive)
+                {
+                    throw new GameHasEndedException("game has ended.");
+                } 
             }
 
             this.EndGame();
@@ -332,50 +451,32 @@ namespace Motus
         public void EndGame()
         {
             _timer.Enabled = false;
-            bool gw = this._game.IsWon;
-            string gameDuration = $"{_watch.Elapsed.Minutes}:{_watch.Elapsed.Seconds}'";
-            MyRenderer.VisualResources["ending"] = Format("C'est fini ! Vous {0}avez {1} réussi à deviner " +
+            bool gw = _game.IsWon;
+            string gameDuration = $"{_watch.Elapsed.Minutes}:{_watch.Elapsed.Seconds}";
+
+            MyRenderer.VisualResources["ending"] = Format("C'est terminé ! Vous {0}avez {1} réussi à deviner " +
             "le mot mystère qui était \"{2}\" !{3}", (gw) ? "" : "n'", (gw) ? "" : "pas", this._game.Word,
                 (gw) ? $"\nTemps total : {gameDuration}" : "");
+
             BuildUserFeedbackString(false);
-            MyRenderer.ScreenResources["GameplayScreen"][_infoIndex] = "[ending]";
-            MyRenderer.RenderScreen("GameplayScreen");
+            List<string> screenTemplate = ScreenResources["GameplayScreen"];
+
+            int levelIndicatorIndex = ScreenResources["GameplayScreen"].IndexOf("<1>");
+            int startHintIndex = ScreenResources["GameplayScreen"].IndexOf("<2>");
+            int infoIndex = ScreenResources["GameplayScreen"].IndexOf("<3>");
+            int backIndex = ScreenResources["GameplayScreen"].IndexOf("<4>");
+
+            screenTemplate[levelIndicatorIndex] = $"[level{_game.DifficultyLevel}]";
+            screenTemplate[startHintIndex] = "[inputAreaTextIndicator]";
+            screenTemplate[infoIndex] = "[ending]";
+            screenTemplate[backIndex] = "[backToMainMenu]";
+
+            MyRenderer.RenderScreen(screenTemplate);
+
             //SaveData(this._game.IsWon, this._game.History, this._game.DifficultyLevel, (this._game.History.Length - 1));
-            //Statistics(this._game.IsWon,this._game.DifficultyLevel, this._game.History) ;
+            //Statistics(this._game.IsWon, this._game.DifficultyLevel, this._game.History);
         }
-        
-        private void DisplayFeedback()
-        {
-            //string 
-            string[] hist = this._game.History;
-            
-            ConsoleColor[] colors = new ConsoleColor[]
-            {
-                ConsoleColor.Red, 
-                ConsoleColor.Yellow,
-                ConsoleColor.Blue,
-            };
 
-            foreach (string t in hist)
-            {
-                if (IsNullOrEmpty(t)) { continue;}
-
-                string[] values = t.Split('|');
-                string input = values[0];
-                string feedback = values[1];
-
-                for (int i = 0; i < feedback.Length; i++)
-                {
-                    int f = (int) char.GetNumericValue(feedback[i]);
-                    Console.BackgroundColor = colors[f];
-                    Console.Write(input[i]);
-                }
-
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.WriteLine();
-            }
-        }
-        
         private void SaveData(bool won, string[] histo, int niv, int nbtenta)
         {
             string datapath = "../../../Resources/data.txt";

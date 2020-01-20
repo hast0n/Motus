@@ -28,7 +28,6 @@ namespace Motus
     class Renderer
     {
         public IDictionary<string, string> VisualResources;
-        public IDictionary<string, List<string>> ScreenResources;
         public int WindowWidth;
         public int WindowHeight;
         public int GamePadding;
@@ -182,7 +181,7 @@ namespace Motus
             }
         }
 
-        public Dictionary<int, string[]> RenderScreen(string screen)
+        public Dictionary<int, string[]> RenderScreen(List<string> screen)
         {
             #region Render Period Initialization
             Dictionary<int, string[]> modifierDictionary = new Dictionary<int, string[]>();
@@ -220,17 +219,18 @@ namespace Motus
             if (modIndex == 0)
             {
                 FormatScreen(screenString, modifierDictionary);
+                var input = Console.ReadKey();
             }
             else
             {
-                while (modifierDictionary.Count > 0)
+                while (modifierDictionary.Count > 0 && canInput)
                 {
                     modIndex = (FirstUnsetInput() == 0) ? LastSetInput() : FirstUnsetInput() ;
 
                     string currentRegexPattern = modifierDictionary[modIndex][1];
                     string input = $"{Console.ReadKey().KeyChar}";
 
-                    while (!Regex.IsMatch(input, currentRegexPattern))
+                    while (!Regex.IsMatch(input, currentRegexPattern) && canInput)
                     {
                         Console.Write("\b");
 
@@ -252,7 +252,7 @@ namespace Motus
                         input = $"{Console.ReadKey().KeyChar}";
                     }
 
-                    if (!input.Equals("\b"))
+                    if (!input.Equals("\b") && canInput)
                     {
                         modifierDictionary[modIndex][0] = input;
                     }
@@ -264,11 +264,11 @@ namespace Motus
             return modifierDictionary;
         }
 
-        private StringBuilder ScreenReader(string screen, ref Dictionary<int, string[]> modifierDictionary)
+        private StringBuilder ScreenReader(List<string> screen, ref Dictionary<int, string[]> modifierDictionary)
         {
             StringBuilder output = new StringBuilder();
 
-            foreach (string lineIdentifier in ScreenResources[screen])
+            foreach (string lineIdentifier in screen)
             {
                 var rawStrings = Regex.Match(lineIdentifier, RegexScreenParamDelimiterPattern).Groups;
                 string key = rawStrings.Count > 1 ? rawStrings[2].Value : lineIdentifier;
