@@ -20,12 +20,15 @@ namespace Motus
 
         public GameCore(int letterNb, int triesNb, bool randomizeFirstLetter)
         {
+            // parameters initialization
             this.LetterNb = letterNb;
             this.TriesNb = triesNb;
 
+            // draw a word in the dictionnary according to letterNb
             this.Word = this.SelectWord(letterNb).ToUpper();
             string tmp;
 
+            // randomize first letter if difficulty level > 1
             if (randomizeFirstLetter)
             {
                 int index = new Random().Next(0, letterNb - 1);
@@ -39,6 +42,8 @@ namespace Motus
             }
             
             this.History = new string[triesNb + 1];
+
+            // Initialize 
             this.CheckPosition(tmp, DateTime.Now.Millisecond);
         }
 

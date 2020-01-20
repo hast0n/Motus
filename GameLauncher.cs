@@ -37,6 +37,7 @@ namespace Motus
         private Timer _timer;
         private double _lastGuessTime;
         private bool _isLive;
+        public int difficultyLevel;
         public Dictionary<string, List<string>> ScreenResources;
 
         private int NbTried => this._game.History.Where(c => c != null).ToArray().Length - 1;
@@ -295,7 +296,7 @@ namespace Motus
 
             int timeLap;
 
-            switch (this._game.DifficultyLevel)
+            switch (difficultyLevel)
             {
                 case 3:
                     timeLap = 45000;
@@ -314,7 +315,7 @@ namespace Motus
             _timer = new Timer(timeLap);
             _timer.Elapsed += OnTimeElapsed;
             _timer.AutoReset = false;
-            _timer.Enabled = this._game.DifficultyLevel != 1;
+            _timer.Enabled = difficultyLevel != 1;
             _watch = Stopwatch.StartNew();
         }
 
@@ -405,6 +406,7 @@ namespace Motus
 
                 if (new[] { 1, 2, 3, 4, 5 }.Contains(userChoice))
                 {
+                    difficultyLevel = userChoice;
                     try
                     {
                         Start(userChoice);
@@ -492,7 +494,7 @@ namespace Motus
             int infoIndex = ScreenResources["GameplayScreen"].IndexOf("<3>");
             int backIndex = ScreenResources["GameplayScreen"].IndexOf("<4>");
 
-            screenTemplate[levelIndicatorIndex] = $"[level{_game.DifficultyLevel}]";
+            screenTemplate[levelIndicatorIndex] = $"[level{difficultyLevel}]";
             screenTemplate[startHintIndex] = "[inputAreaTextIndicator]";
             screenTemplate[infoIndex] = "[ending]";
             screenTemplate[backIndex] = "[backToMainMenu]";
@@ -530,8 +532,7 @@ namespace Motus
                 int avgTime = 0;
                 int overallTime = 0;
                 int i = 1;
-                bool noEnd = true;
-                while (i < this._game.History.Length & noEnd)
+                while (i < _game.History.Length)
                 {
                     while (this._game.History[i] != null)
                     {
@@ -539,15 +540,10 @@ namespace Motus
                         overallTime += int.Parse(this._game.History[i].Split("|")[2]);
                     }
 
-                    if (this._game.History[i] == null)
-                    {
-                        noEnd = false;
-                    }
-
                     i++;
                 }
                 avgTime /= (i - 1);
-                string entry = String.Format("{0},{1},{2},{3}", this._game.DifficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (this._game.History.Length - 1).ToString());
+                string entry = String.Format("{0},{1},{2},{3}", difficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (this._game.History.Length - 1).ToString());
 
                 try
                 {
