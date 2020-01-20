@@ -513,15 +513,15 @@ namespace Motus
             int statIndex = ScreenResources["StatisticsScreen"].IndexOf("<1>");
 
             MyRenderer.VisualResources["TabStat"] = Join(MyRenderer.SplitChar, "" +
-                "┌──────────────────────────────────────────────────────────┬────────┬────────┐",
-                "│ Statistiques sur le dernier niveau joué                  │ < en % │ > en % |",
-                "├──────────────────────────────────────────────────────────┼────────┼────────┤",
-                "│  Nombre de tentatives moyenne : "+ tab[0, 0].Split("|")[2] + "                        |   " + tab[0, 0].Split("|")[0] + "  │   " + tab[0, 1].Split("|")[1] + "  │",
-                "│                                                          ┼        ┼        ┤",
+                "┌──────────────────────────────────────────────────────────┬────────┬─────────┐",
+                "│ Statistiques sur le dernier niveau joué                  │ < en % │ >= en % │",
+                "├──────────────────────────────────────────────────────────┼────────┼─────────┤",
+                "│  Nombre de tentatives moyenne : "+ tab[0, 0].Split("|")[2] + "                        |   " + tab[0, 0].Split("|")[0] + "  │   " + tab[0, 0].Split("|")[1] + "  │",
+                "│                                                          ┼        ┼         ┤",
                 "│  Temps par tentative moyen : "+ tab[0, 1].Split("|")[2] + "                      |   " + tab[0, 1].Split("|")[0] + "  │   " + tab[0, 1].Split("|")[1] + "  │",
-                "│                                                          ┼        ┼        ┤",
+                "│                                                          ┼        ┼         ┤",
                 "│  Temps total moyen : "+ tab[0, 2].Split("|")[2] + "                              |   " + tab[0, 2].Split("|")[0] + "  │   " + tab[0, 2].Split("|")[1] + "  │",
-                "└──────────────────────────────────────────────────────────┴────────┴────────┘",
+                "└──────────────────────────────────────────────────────────┴────────┴─────────┘",
                 "┌──────────────────────────────────────────────────────────┬─────────┬─────────┬─────────┐",
                 "│ Distribution des données enregistrées                    │         │         |         │",
                 "| par rapport à la dernière partie jouée                   │ < en %  │ > en %  | = en %  │",
