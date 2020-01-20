@@ -143,19 +143,20 @@ namespace Motus
                 int overallTime = 0;
                 int i = 1;
                 bool noEnd = true;
-                while (i <History.Length & noEnd)
+                while (i < History.Length & noEnd)
                 {
                     while (History[i] != null)
                     {
                         avgTime += (int.Parse(History[i].Split("|")[2]) - int.Parse(History[i - 1].Split("|")[2]));
                         overallTime += int.Parse(History[i].Split("|")[2]);
-                        i++;
                     }
 
                     if (History[i] == null)
                     {
                         noEnd = false;
                     }
+
+                    i++;
                 }
                 avgTime /= (i - 1);
                 string entry = String.Format("{0},{1},{2},{3}", DifficultyLevel.ToString(), overallTime.ToString(), avgTime.ToString(), (History.Length - 1).ToString());

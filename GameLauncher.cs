@@ -268,7 +268,7 @@ namespace Motus
                     }
                 },
                 {
-                    "StatisticScreen", new List<string>
+                    "StatisticsScreen", new List<string>
                     {
                         "empty",
 
@@ -282,7 +282,7 @@ namespace Motus
 
                         "[empty]","<1>", "[empty]",
 
-                        "[empty]",
+                        "[empty]", "[backToMainMenu]",
 
                         "[empty]", "botBar",
                     }
@@ -409,16 +409,11 @@ namespace Motus
                     {
                         Start(userChoice);
                     }
-                    catch (GameHasEndedException e)
-                    {
-                        Console.Clear();
-                        // Exemple pour la page rejouer
-                    }
+                    catch (GameHasEndedException e) { /* */ }
                 }
                 else
                 {
                     ShowStatistic();
-                    myScreenParams = MyRenderer.RenderScreen(ScreenResources["StatisticScreen"]);
                 }
             }
         }
@@ -513,9 +508,9 @@ namespace Motus
 
             IDictionary<int, string[]> myScreenParams;
 
-            List<string> screenTemplate = ScreenResources["StatisticScreen"].ToList();
+            List<string> screenTemplate = ScreenResources["StatisticsScreen"].ToList();
 
-            int statIndex = ScreenResources["GameplayScreen"].IndexOf("<1>");
+            int statIndex = ScreenResources["StatisticsScreen"].IndexOf("<1>");
 
             MyRenderer.VisualResources["TabStat"] = Join(MyRenderer.SplitChar, "" +
                 "┌──────────────────────────────────────────────────────────┬────────┬────────┐",
@@ -539,7 +534,7 @@ namespace Motus
                 "└──────────────────────────────────────────────────────────┴─────────┴─────────┴─────────┘"
             );
             
-            screenTemplate[statIndex] = "TabStat";
+            screenTemplate[statIndex] = "[TabStat]";
             MyRenderer.RenderScreen(screenTemplate);
 
         }
