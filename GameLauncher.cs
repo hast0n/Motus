@@ -46,7 +46,8 @@ namespace Motus
 
         private void SetGameRenderer()
         {
-            // Setup renderer parameters
+            // Setup Renderer parameters
+
             _myRenderer = new Renderer()
             {
                 WindowWidth = 120,
@@ -590,7 +591,7 @@ namespace Motus
                 int i = 1;
                 while (i < _game.History.Length)
                 {
-                    while (this._game.History[i] != null)
+                    if (this._game.History[i] != null)
                     {
                         avgTime += (int.Parse(this._game.History[i].Split("|")[2]) - int.Parse(this._game.History[i - 1].Split("|")[2]));
                         overallTime += int.Parse(this._game.History[i].Split("|")[2]);
