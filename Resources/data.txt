@@ -1,3 +1,5 @@
 Enregistrement(s) de vos statistiques de jeu
 Niveau, Temps total de résolution, Temps moyen par mot, Nombre de tentative(s)
 
+1,53651,4597,6
+1,96977,16407,6

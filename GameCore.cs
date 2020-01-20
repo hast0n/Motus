@@ -207,7 +207,7 @@ namespace Motus
             {
                 string[] lines = File.ReadAllLines(datapath);
 
-                // Statistics for the chosen level
+                // Statistics for the last chosen level
                 for (int i = 3; i < lines.Length; i++)
                 {
                     int t = int.Parse(lines[i].Split(",")[0]);
@@ -225,17 +225,21 @@ namespace Motus
 
                 for (int i = 3; i < lines.Length; i++)
                 {
-                    if (int.Parse(lines[i].Split(",")[3]) < avgTry)
+                    int t = int.Parse(lines[i].Split(",")[0]);
+                    if (t == int.Parse(lines.Last().Split(",")[0]))
                     {
-                        infAvgTry += 1;
-                    }
-                    if (int.Parse(lines[i].Split(",")[1]) < avgTimeTot)
-                    {
-                        infAvgTimeTot += 1;
-                    }
-                    if (int.Parse(lines[i].Split(",")[2]) < avgTimeTry)
-                    {
-                        infAvgTimeTry += 1;
+                        if (int.Parse(lines[i].Split(",")[3]) < avgTry)
+                        {
+                            infAvgTry += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[1]) < avgTimeTot)
+                        {
+                            infAvgTimeTot += 1;
+                        }
+                        if (int.Parse(lines[i].Split(",")[2]) < avgTimeTry)
+                        {
+                            infAvgTimeTry += 1;
+                        }
                     }
                 }
 
@@ -243,12 +247,12 @@ namespace Motus
                 supAvgTimeTry = cpt - infAvgTimeTry;
                 supAvgTimeTot = cpt - infAvgTimeTot;
 
-                infAvgTry /= cpt * 100;
-                supAvgTry /= cpt * 100;
-                infAvgTimeTry /= cpt * 100;
-                supAvgTimeTry /= cpt * 100;
-                infAvgTimeTot /= cpt * 100;
-                supAvgTimeTot /= cpt * 100;
+                infAvgTry = (infAvgTry/cpt) * 100;
+                supAvgTry = (supAvgTry / cpt) * 100;
+                infAvgTimeTry =(infAvgTimeTry /cpt) * 100;
+                supAvgTimeTry = (supAvgTimeTry / cpt) * 100;
+                infAvgTimeTot = (infAvgTimeTot / cpt) * 100;
+                supAvgTimeTot = (supAvgTimeTot / cpt) * 100;
 
 
 
@@ -281,26 +285,26 @@ namespace Motus
                         {
                             idemAvgTimeTryPerso += 1;
                         }
-                        cpt += 1;
+                        cptPerso += 1;
                     }
                 }
                 supAvgTryPerso = cptPerso - infAvgTryPerso - idemAvgTryPerso;
                 supAvgTimeTryPerso = cptPerso - infAvgTimeTryPerso - idemAvgTimeTryPerso;
                 supAvgTimeTotPerso = cptPerso - infAvgTimeTotPerso - idemAvgTimeTotPerso;
 
-                infAvgTryPerso /= cptPerso * 100;
-                idemAvgTryPerso /= cptPerso * 100;
-                supAvgTryPerso /= cptPerso * 100;
-                infAvgTimeTryPerso /= cptPerso * 100;
-                idemAvgTimeTryPerso /= cptPerso * 100;
-                supAvgTimeTryPerso /= cptPerso * 100;
-                infAvgTimeTotPerso /= cptPerso * 100;
-                idemAvgTimeTotPerso /= cptPerso * 100;
-                supAvgTimeTotPerso /= cptPerso * 100;
+                infAvgTryPerso = (infAvgTryPerso / cptPerso) * 100;
+                idemAvgTryPerso = (idemAvgTryPerso / cptPerso) * 100;
+                supAvgTryPerso = (supAvgTryPerso / cptPerso) * 100;
+                infAvgTimeTryPerso = (infAvgTimeTryPerso / cptPerso) * 100;
+                idemAvgTimeTryPerso = (idemAvgTimeTryPerso / cptPerso) * 100;
+                supAvgTimeTryPerso = (supAvgTimeTryPerso / cptPerso) * 100;
+                infAvgTimeTotPerso = (infAvgTimeTotPerso / cptPerso) * 100;
+                idemAvgTimeTotPerso = (idemAvgTimeTotPerso / cptPerso) * 100;
+                supAvgTimeTotPerso = (supAvgTimeTotPerso / cptPerso) * 100;
 
                 dataStat[0, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTry, 1).ToString("0.0")=="NaN"?"0.0": Math.Round(infAvgTry, 1).ToString("0.0"),Math.Round(supAvgTry, 1).ToString("0.0")=="NaN"?"0.0":Math.Round(supAvgTry, 1).ToString("0.0"), avgTry.ToString() == "NaN" ? "0" : avgTry.ToString()); ;
-                dataStat[0, 1] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTry, 1).ToString("0.0"), Math.Round(avgTimeTry/1000, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTry, 1).ToString("0.0"));
-                dataStat[0, 2] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTot, 1).ToString("0.0"), Math.Round(avgTimeTot / 1000, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTot, 1).ToString("0.0"));
+                dataStat[0, 1] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTry, 1).ToString("0.0"), Math.Round(supAvgTimeTry, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTry, 1).ToString("0.0"), Math.Round(avgTimeTry, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTry/1000, 1).ToString("0.0"));
+                dataStat[0, 2] = String.Format("{0}|{1}|{2} s", Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(infAvgTimeTot, 1).ToString("0.0"), Math.Round(infAvgTimeTot, 1).ToString("0.0") == "NaN" ? "0.0" : Math.Round(supAvgTimeTot, 1).ToString("0.0"), Math.Round(avgTimeTot, 1).ToString("0.0") == "NaN" ? "00.0" : Math.Round(avgTimeTot/1000, 1).ToString("0.0"));
 
                 dataStat[1, 0] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTryPerso, 1).ToString("0.0"), Math.Round(supAvgTryPerso, 1).ToString("0.0"));
                 dataStat[1, 1] = String.Format("{0}|{1}|{2}", Math.Round(infAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(idemAvgTimeTryPerso, 1).ToString("0.0"), Math.Round(supAvgTimeTryPerso, 1).ToString("0.0"));
